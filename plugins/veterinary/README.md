@@ -1,6 +1,6 @@
 # BizPlug Veterinary & Pet Care
 
-Version 0.10.0. Book pet appointments for veterinary & pet care businesses.
+Version 0.11.0. Book pet appointments for veterinary & pet care businesses.
 
 - Main function: Book pet appointments
 - MCP server URL: `https://mcp.bizplug.ai/plugin/veterinary` (streamable HTTP, no sign-in)
@@ -28,6 +28,7 @@ Version 0.10.0. Book pet appointments for veterinary & pet care businesses.
 
 ## Changes
 
+- **0.11.0** (17 November 2026): Every tool states whether it only reads, whether its action can be taken back and whether it reaches outside the business's own data, as ChatGPT's plug-in directory requires.
 - **0.10.0** (17 November 2026): The plug-in introduces itself to ChatGPT and other clients with a description and a website, and BizPlug's industry-wide plug-ins with the BizPlug logo, privacy policy, terms and support contact.
 - **0.9.0** (16 November 2026): Checkout on the business's own Stripe or Checkout.com account, when it has connected one: customers pay for an order or booking right after the request, and the status check asks the provider whether it was paid.
 - **0.8.0** (16 November 2026): Clear answers on how to pay: the business's own payment page when it has one, offered whenever a customer asks, and payment never taken in the chat.
