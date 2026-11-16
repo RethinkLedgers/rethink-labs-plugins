@@ -1,6 +1,6 @@
 # BizPlug Travel & Tourism
 
-Version 0.9.0. Tour and trip availability with price per traveller for travel & tourism businesses.
+Version 0.10.0. Tour and trip availability with price per traveller for travel & tourism businesses.
 
 - Main function: Tour and trip availability with price per traveller
 - MCP server URL: `https://mcp.bizplug.ai/plugin/travel` (streamable HTTP, no sign-in)
@@ -28,6 +28,7 @@ Version 0.9.0. Tour and trip availability with price per traveller for travel & 
 
 ## Changes
 
+- **0.10.0** (17 November 2026): The plug-in introduces itself to ChatGPT and other clients with a description and a website, and BizPlug's industry-wide plug-ins with the BizPlug logo, privacy policy, terms and support contact.
 - **0.9.0** (16 November 2026): Checkout on the business's own Stripe or Checkout.com account, when it has connected one: customers pay for an order or booking right after the request, and the status check asks the provider whether it was paid.
 - **0.8.0** (16 November 2026): Clear answers on how to pay: the business's own payment page when it has one, offered whenever a customer asks, and payment never taken in the chat.
 - **0.7.0** (16 November 2026): The business's own buttons (WhatsApp, booking, directions, reviews, social media) on the menu card and next to availability, with presses counted for the business.

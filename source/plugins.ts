@@ -7,7 +7,7 @@ import { pricing } from "@/lib/pricing";
 import { siteConfig } from "@/lib/seo";
 import { directoryPath, type DirectoryDef } from "@/lib/directory-store";
 
-export const PLUGIN_VERSION = "0.9.0"; // versions and their notes: plugin-versions.ts
+export const PLUGIN_VERSION = "0.10.0"; // versions and their notes: plugin-versions.ts
 export const MCP_HOST = "https://mcp.bizplug.ai";
 /** Where plug-ins published to test from the client portal answer: the same app, on its test host. */
 export const MCP_TEST_HOST = "https://mcp-test.bizplug.ai";
@@ -186,13 +186,22 @@ export function getPlugin(slug: string) {
   return plugins.find((p) => p.slug === slug);
 }
 
+/** Who publishes the plug-in packages, as each package's `author`. */
+export const PLUGIN_AUTHOR = { name: "Bart Cant - Rethink Labs", email: siteConfig.email, url: siteConfig.url };
+/** The logo every industry plug-in package carries, under public/. */
+export const PLUGIN_LOGO = "logo.png";
+/** BizPlug's lime, for surfaces that tint a plug-in with its brand colour. */
+export const PLUGIN_BRAND_COLOR = "#d4ff3a";
+
 export function pluginJson(p: IndustryPlugin) {
   return {
     $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
     name: `bizplug-${p.slug}`,
     version: PLUGIN_VERSION,
     description: p.longDescription,
-    author: { name: siteConfig.developer?.name ?? "msg2ai" },
+    author: PLUGIN_AUTHOR,
+    homepage: `${siteConfig.url}/industries/${p.slug}`,
+    repository: PLUGINS_REPO,
     mcpServers: "./mcp.json",
     extensions: {
       "com.openai": {
@@ -205,6 +214,13 @@ export function pluginJson(p: IndustryPlugin) {
           websiteURL: `${siteConfig.url}/industries/${p.slug}`,
           privacyPolicyURL: `${siteConfig.url}/privacy`,
           termsOfServiceURL: `${siteConfig.url}/terms`,
+          developerName: siteConfig.name,
+          supportURL: `${siteConfig.url}/contact`,
+          supportEmail: siteConfig.email,
+          brandColor: PLUGIN_BRAND_COLOR,
+          // The package carries its own copy of the logo (scripts/build-plugins.ts copies it from public/).
+          logo: "./assets/icon.png",
+          composerIcon: "./assets/icon.png",
         },
         review: {
           commerce: false,
@@ -238,7 +254,7 @@ export function directoryPluginJson(d: DirectoryDef) {
     name: `bizplug-${d.slug}`,
     version: PLUGIN_VERSION,
     description: d.longDescription,
-    author: { name: siteConfig.developer?.name ?? "msg2ai" },
+    author: PLUGIN_AUTHOR,
     mcpServers: "./mcp.json",
     extensions: {
       "com.openai": {

@@ -1,4 +1,8 @@
+<img src="assets/rethink-labs-logo.png" alt="Rethink Labs" width="96" align="right">
+
 # BizPlug plug-ins for ChatGPT
+
+Published by **Bart Cant - Rethink Labs**.
 
 The standard BizPlug plug-in for each of 80 industries. A plug-in is an MCP (Model Context Protocol) server, hosted by BizPlug, that lets a business's customers ask questions and send orders, bookings or requests from inside ChatGPT. The business confirms every request itself. Customers pay the business directly: a Pay online button after a request opens the business's own payment page (Stripe is the official payment provider; PayPal, Square and other payment pages work too), and the money never passes through BizPlug.
 
@@ -55,10 +59,11 @@ Sign up at https://bizplug.ai/portal, pick your industry and provide the data it
 
 Plug-ins from other companies can be listed in the BizPlug marketplace next to the industry plug-ins. Do not open a pull request here: this repository is generated, so submit through https://bizplug.ai/marketplace#submit. [CONTRIBUTING.md](CONTRIBUTING.md) explains the process and the components a valid plug-in must have: an MCP server over streamable HTTP, `plugin.json`, `mcp.json`, a README, review test cases, and a privacy policy and terms.
 
-## Version 0.9.0
+## Version 0.10.0
 
 All 80 plug-ins share one version. What changed in each:
 
+- **0.10.0** (17 November 2026): The plug-in introduces itself to ChatGPT and other clients with a description and a website, and BizPlug's industry-wide plug-ins with the BizPlug logo, privacy policy, terms and support contact.
 - **0.9.0** (16 November 2026): Checkout on the business's own Stripe or Checkout.com account, when it has connected one: customers pay for an order or booking right after the request, and the status check asks the provider whether it was paid.
 - **0.8.0** (16 November 2026): Clear answers on how to pay: the business's own payment page when it has one, offered whenever a customer asks, and payment never taken in the chat.
 - **0.7.0** (16 November 2026): The business's own buttons (WhatsApp, booking, directions, reviews, social media) on the menu card and next to availability, with presses counted for the business.
@@ -195,4 +200,4 @@ A business's own plug-in stays on the version it was published with until the bu
 
 ---
 
-© msg2ai (https://msg2.ai). BizPlug is not affiliated with OpenAI. ChatGPT is a trademark of OpenAI.
+Published by Bart Cant - Rethink Labs. BizPlug is built and run by msg2ai (https://msg2.ai) and is not affiliated with OpenAI. ChatGPT is a trademark of OpenAI.
