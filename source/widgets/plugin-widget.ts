@@ -588,7 +588,7 @@ function infoView() {
 }
 // ---- Members (version 0.12.0, coworking) ----
 // The business's published member businesses: a search box, its own industries and sites as filters, a member
-// on its own screen, and "Find a collaborator". The card only shows what each member published; the customer
+// on its own screen, and "Find a collaborator". The card only shows what the business lists for each member; the customer
 // writes or calls the member themselves.
 const memberArgs = (over) => { const d = state.data.members || {}; return clean(Object.assign({ query: v("mq"), industry: d.industry, location: d.location }, over || {})); };
 const membersAsk = (a) => (a.query ? "Which member businesses match " + a.query + "?" : "Which businesses are members here" + (a.industry ? " in " + a.industry : "") + (a.location ? " at " + a.location : "") + "?");
@@ -609,7 +609,7 @@ function membersView() {
     '<div class="it"><button class="rowb" data-member="' + esc(x.id) + '"><div class="nm"><b>' + esc(x.name) + '</b><span class="qlabel">' + esc(x.industry) + "</span></div>" +
     (x.description ? '<div class="bl clamp">' + esc(x.description) + "</div>" : "") + (x.why ? '<div class="bl clamp">' + esc(x.why) + "</div>" : "") + "</button></div>").join("");
   return head + '<div class="list">' + rows + "</div>" + (d.more ? '<div class="note">' + d.more + " more: search or choose a filter to narrow the list.</div>" : "") + errLine() +
-    '<div class="note">Each member published these details itself. You contact a member directly; nobody introduces you or passes a message on.</div>' + links("members");
+    '<div class="note">These are the details ' + esc(d.business || "the business") + " lists for its members. You contact a member directly; nobody introduces you or passes a message on.</div>" + links("members");
 }
 function memberView() {
   const m = state.mem[state.sel];
@@ -621,13 +621,13 @@ function memberView() {
     (m.description ? '<p class="about" style="margin:0 0 4px">' + esc(m.description) + "</p>" : "") + (facts ? '<table class="tbl">' + facts + "</table>" : "") +
     (web || mail ? '<div class="actions" style="margin-top:14px">' + (web ? '<button class="btn go" data-href="' + esc(m.website) + '">Website</button>' : "") +
       (mail ? '<button class="btn" data-href="mailto:' + esc(m.email) + '">' + icon("mail") + "Email</button>" : "") + "</div>" : "") +
-    '<div class="note">These are the contact details ' + esc(m.name) + " published. You write or call them yourself: " + esc((state.data.members || {}).business || "the business") + " and BizPlug do not introduce you, pass a message on or vouch for a member.</div>";
+    '<div class="note">These are the contact details listed for ' + esc(m.name) + ". You write or call them yourself: " + esc((state.data.members || {}).business || "the business") + " and BizPlug do not introduce you, pass a message on or vouch for a member.</div>";
 }
 function collabView() {
   return '<div class="form">' + top("Find a collaborator") + '<div class="hint">Say what you need, what you can offer, or both, to see the members whose entries match.</div>' +
     field("mneed", "What do you need?", { optional: true, placeholder: "e.g. help with a website" }) + field("moffer", "What can you offer?", { optional: true, placeholder: "e.g. bookkeeping for small teams" }) + errLine() +
     '<div class="actions">' + primary("Show matching members", "match") + "</div>" +
-    '<div class="note" style="margin-top:0">Your words are matched against what each member published, above all what it offers and what it is looking for. You contact a member directly.</div></div>';
+    '<div class="note" style="margin-top:0">Your words are matched against each member's entry, above all what it offers and what it is looking for. You contact a member directly.</div></div>';
 }
 
 function requestView() {

@@ -173,7 +173,7 @@ export function buildPlugin(i: Industry): IndustryPlugin {
           {
             name: MEMBERS_TOOL,
             title: "Members",
-            description: `Find the member businesses of this ${noun} business, from the member list it published. Search by a name, a kind of business, or what the person needs or offers, optionally narrowed to an industry or a location; with no query it lists the members by industry. Returns each match with its description, what it is looking for, what it offers and its published contact details. Creates nothing and sends nothing. ${MEMBERS_DIRECT} Share only what the member published.`,
+            description: `Find the member businesses of this ${noun} business, from the member list it published. Search by a name, a kind of business, or what the person needs or offers, optionally narrowed to an industry or a location; with no query it lists the members by industry. Returns each match with its description, what it is looking for, what it offers and its published contact details. Creates nothing and sends nothing. ${MEMBERS_DIRECT} Share only what the business lists for a member.`,
             readOnly: true,
           },
         ]

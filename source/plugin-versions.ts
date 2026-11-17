@@ -63,7 +63,7 @@ export type PluginFeatures = {
    * Coworking & Offices only: the business's member businesses in the plug-in (members.csv). find_members
    * searches them by name, kind of business, or what a person needs or offers; the card gets a Members button
    * with search, filters, each member on its own screen and "Find a collaborator". Contact is direct, with the
-   * details the member published: nobody introduces or forwards.
+   * details the business lists for the member: nobody introduces or forwards.
    */
   members: boolean;
 };
@@ -199,7 +199,7 @@ export const PLUGIN_VERSIONS: PluginVersion[] = [
     notes: [
       "For coworking plug-ins: upload members.csv with the member businesses that agreed to be listed, and your plug-in gets a Members button. People search your members by name, kind of business or location, and open each one to see what it does, what it is looking for and what it offers.",
       "Find a collaborator: a person says what they need or what they can offer, and the plug-in shows the members whose entries match.",
-      "Contact is direct: the plug-in shows the website, general email and phone number each member published, and the person writes or calls the member themselves. Neither you nor BizPlug introduces, forwards or vouches. Other plug-ins do not change.",
+      "Contact is direct: the plug-in shows the website, general email and phone number you list for each member, and the person writes or calls the member themselves. Neither you nor BizPlug introduces, forwards or vouches. Other plug-ins do not change.",
     ],
     features: { menuCard: true, cardResults: true, cardNavigation: true, whatsappContact: true, businessLinks: true, quickActions: true, paymentAnswers: true, stripeCheckout: true, listingDetails: true, fullAnnotations: true, members: true },
   },
