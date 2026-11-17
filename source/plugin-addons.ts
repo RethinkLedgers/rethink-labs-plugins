@@ -158,19 +158,19 @@ const WHATSAPP_READY: Addon = {
   prepare: WHATSAPP_PREPARE,
   link: CONCIERGE_LINK,
 };
-const WHATSAPP_CUSTOM: Addon = {
-  id: "whatsapp-concierge", name: "WhatsApp assistant", group: "chat", status: "custom",
-  what: "Requests continued with your business on WhatsApp by an assistant, through msg2ai.",
-  steps: CUSTOM_PROCESS,
-  today: {
-    title: "Until it is built",
-    steps: [
-      "Set up WhatsApp as well: customers get a button to your own WhatsApp number today, and you answer them yourself.",
-      "Requests reach you by email, and in Slack, Google Sheets or at your webhook if you chose them.",
-    ],
-  },
-  adds: "An assistant answers on your WhatsApp number and continues the request there, through msg2ai, the WhatsApp service of the company behind BizPlug.",
-  prepare: [...WHATSAPP_PREPARE, "What should happen on WhatsApp: answering questions, confirming the request, or more."],
+// The business's assistant in msg2ai, the WhatsApp service of the company behind BizPlug: the client enters the
+// assistant's WhatsApp number and its join code, and the WhatsApp button opens that assistant (client-integrations.ts).
+const MSG2AI_ASSISTANT: Addon = {
+  id: "msg2ai-assistant", name: "Msg2ai WhatsApp assistant", group: "chat", status: "included",
+  what: "The WhatsApp button opens your assistant in msg2ai, which continues with your customer on WhatsApp.",
+  needs: ["A WhatsApp assistant in msg2ai, with its WhatsApp number and its join code."],
+  steps: [
+    "Enter the WhatsApp number of your assistant in msg2ai, with its country code, and the assistant's join code, then press Save. It applies to your test and live plug-in at once.",
+    "Press Open WhatsApp to test it: WhatsApp opens a chat with that number and the message Join followed by your code filled in. Nothing is sent until you press send there.",
+    "Customers get the same button with your contact details and after they send a request. While an assistant is saved here, the button opens the assistant instead of the number saved under WhatsApp.",
+    "Requests still reach you by email. msg2ai is a separate product with its own plan: BizPlug only opens the chat, and what the assistant says there is set up in msg2ai.",
+    "The button shows from plug-in version 0.5.0. If your plug-in runs an older version, press Upgrade on your plug-in page.",
+  ],
   link: CONCIERGE_LINK,
 };
 
@@ -333,13 +333,13 @@ const CHECKOUT_COM: Addon = {
 };
 
 /** The add-ons with their own how-to page, for src/lib/how-to.ts: the pages are written from the same steps. */
-export const GUIDED_ADDONS = { stripeCheckout: STRIPE_CHECKOUT, checkoutCom: CHECKOUT_COM, slack: SLACK, whatsapp: WHATSAPP, whatsappReady: WHATSAPP_READY, whatsappCustom: WHATSAPP_CUSTOM, googleCalendar: CALENDARS[0], teams: TEAMS, hubspot: HUBSPOT, notion: NOTION, trello: TRELLO, airtable: AIRTABLE, calendarLimit };
+export const GUIDED_ADDONS = { stripeCheckout: STRIPE_CHECKOUT, checkoutCom: CHECKOUT_COM, slack: SLACK, whatsapp: WHATSAPP, whatsappReady: WHATSAPP_READY, msg2aiAssistant: MSG2AI_ASSISTANT, googleCalendar: CALENDARS[0], teams: TEAMS, hubspot: HUBSPOT, notion: NOTION, trello: TRELLO, airtable: AIRTABLE, calendarLimit };
 
 /** The add-ons offered for a plug-in, by what its engine does. */
 export function addonsFor(engine: Engine, span?: Span): Addon[] {
-  // Slack and the WhatsApp button are set up by the client alone. Ordering and booking on WhatsApp (msg2ai) already
+  // Slack, the WhatsApp button and the msg2ai assistant's number and join code are set up by the client alone. Ordering and booking on WhatsApp (msg2ai) already
   // runs for pickup orders and room nights; for other plug-in types it needs building.
-  const concierge = engine === "order" || (engine === "stay" && span === "nights") ? WHATSAPP_READY : WHATSAPP_CUSTOM;
+  const concierge = engine === "order" || (engine === "stay" && span === "nights") ? WHATSAPP_READY : MSG2AI_ASSISTANT;
   // Checkout where a request carries a firm price: an order, a booked service, or a stay (stripe-checkout.ts).
   const checkout = engine === "order" || engine === "appt" || engine === "stay" ? [STRIPE_CHECKOUT, CHECKOUT_COM] : [];
   const base = [...ALWAYS, SLACK, TEAMS, HUBSPOT, NOTION, TRELLO, AIRTABLE, WHATSAPP, concierge, ...checkout, ...LINK_ADDONS];
