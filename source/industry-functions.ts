@@ -18,6 +18,7 @@ export type IndustryFunction = {
   span?: Span; // stay only
   perGuest?: boolean; // stay only: price is per guest, not per unit
   note?: string; // extra rule shown to the model
+  members?: boolean; // the business may publish its member businesses: find_members and members.csv (plugins.ts, plugin-data.ts)
 };
 
 const NO_ADVICE = "Scheduling and information only: never give medical, mental-health or clinical advice, and never ask for symptoms or records.";
@@ -26,7 +27,7 @@ const NO_FIN = "Information and scheduling only: never give financial, investmen
 // slug | engine | title | tool names | noun | span | perGuest | note
 const r = (
   slug: string, engine: Engine, title: string, tools: [string, string, string], noun: string,
-  extra: Partial<Pick<IndustryFunction, "span" | "perGuest" | "note">> = {},
+  extra: Partial<Pick<IndustryFunction, "span" | "perGuest" | "note" | "members">> = {},
 ): IndustryFunction => ({ slug, engine, title, tools, noun, ...extra });
 
 export const industryFunctions: IndustryFunction[] = [
@@ -57,7 +58,7 @@ export const industryFunctions: IndustryFunction[] = [
   r("museums", "stay", "Timed tickets and exhibitions", ["check_ticket_availability", "request_tickets", "get_ticket_request_status"], "ticket", { span: "single", perGuest: true }),
   r("sports-teams", "stay", "Seat availability and ticket requests", ["check_seat_availability", "request_tickets", "get_ticket_request_status"], "seat section", { span: "single", perGuest: true }),
   r("car-rental", "stay", "Vehicle availability and rental price", ["check_vehicle_availability", "request_reservation", "get_reservation_status"], "vehicle class", { span: "days" }),
-  r("coworking", "stay", "Desk and office availability and rates", ["check_space_availability", "request_space_booking", "get_booking_status"], "desk, room or office", { span: "days" }),
+  r("coworking", "stay", "Desk and office availability and rates", ["check_space_availability", "request_space_booking", "get_booking_status"], "desk, room or office", { span: "days", members: true }),
 
   // Appointments, tours, demos and consultations: appt engine
   r("healthcare", "appt", "Find and request appointments", ["find_appointment_slots", "request_appointment", "get_appointment_status"], "visit type", { note: NO_ADVICE }),

@@ -11,6 +11,9 @@
 //   own categories and services from plugin.quick, and calendar shortcuts), search and category filters on a
 //   price list, an item or option on its own screen, Back through the screens visited, the business's
 //   published questions and answers (info), and, on the industry-wide plug-in, choosing the business.
+//   From 0.12.0, on a coworking plug-in whose business published its member businesses, the menu has a Members
+//   option (kind "members"): search and filters on the list, a member on its own screen with its published
+//   website, email and phone, and "Find a collaborator". The customer contacts a member themselves.
 // Every value shown comes from a tool's structuredContent, never from its text, which is written for the assistant. Served as
 // text/html+skybridge like the guide card (guide-widget.ts); the URI is content-addressed.
 import { createHash } from "node:crypto";
@@ -25,6 +28,7 @@ const ICONS: Record<string, string> = {
   question: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.4"/><path d="M12 16.5h.01"/>',
   status: '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 14 2 2 4-4"/>',
   contact: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
+  members: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/>',
   store: '<path d="M3 9 4.5 4h15L21 9"/><path d="M3 9v11h18V9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M9 20v-6h6v6"/>',
   mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
   whatsapp: '<path d="M21 12a9 9 0 0 1-13.4 7.9L3 21l1.2-4.4A9 9 0 1 1 21 12z"/><path d="M9 9.5c.3 2.4 2.1 4.2 4.5 4.5l1-1 2 1-.4 1.6c-3.6.3-7.8-3.9-7.5-7.5L10.2 8l1 2z"/>',
@@ -145,7 +149,9 @@ const oa = () => window.openai || null;
 // catalog, availability, slots, estimate, status, contact, request (details before sending), sent, whatsapp.
 const state = { plugin: null, options: [], view: "loading", open: null, data: {}, f: {}, cart: {}, pick: null, business: "", busy: false, error: "", asked: "",
   // 0.4.0: the screens to go back through, the item or option that is open, every item seen (for the order summary), the chosen business.
-  hist: [], shown: null, going: false, sel: null, items: {}, bizName: "", businesses: [], faq: -1 };
+  hist: [], shown: null, going: false, sel: null, items: {}, bizName: "", businesses: [], faq: -1,
+  // 0.12.0: every member business seen, by id, for a member's own screen.
+  mem: {} };
 const p = () => state.plugin || {};
 function save() { try { oa() && oa().setWidgetState && oa().setWidgetState({ f: state.f, business: state.business, bizName: state.bizName }); } catch (e) {} }
 function load() { const ws = oa() && oa().widgetState; if (ws && ws.f) state.f = Object.assign(state.f, ws.f); if (ws && ws.business) state.business = ws.business; if (ws && ws.bizName) state.bizName = ws.bizName; }
@@ -162,7 +168,7 @@ function receive(sc) {
   if (sc.plugin) { state.plugin = sc.plugin; state.options = sc.options || state.options; }
   if (sc.businesses) state.businesses = sc.businesses;
   if (sc.business) {
-    if (sc.business !== state.business) { state.cart = {}; state.items = {}; }
+    if (sc.business !== state.business) { state.cart = {}; state.items = {}; state.mem = {}; }
     state.business = sc.business;
     if (sc.plugin && sc.plugin.businessName) state.bizName = sc.plugin.businessName;
   }
@@ -176,6 +182,7 @@ function receive(sc) {
     if (sc.view === "catalog") { if (!nav()) state.cart = {}; ((sc.catalog || {}).items || []).forEach((x) => { state.items[x.id] = x; }); }
     if (nav() && (sc.view === "sent" || sc.view === "whatsapp")) state.cart = {};
     if (sc.view === "info") state.faq = -1;
+    if (sc.view === "members" && sc.members) { (sc.members.items || []).forEach((x) => { state.mem[x.id] = x; }); state.f.mq = sc.members.query || ""; }
     state.view = sc.view;
   }
   state.busy = false; state.error = "";
@@ -363,7 +370,7 @@ function links(except) {
 function track() {
   const cur = { v: state.view, open: state.open, sel: state.sel };
   const was = state.shown;
-  const same = was && was.v === cur.v && (cur.v !== "form" || was.open === cur.open) && ((cur.v !== "item" && cur.v !== "option") || was.sel === cur.sel);
+  const same = was && was.v === cur.v && (cur.v !== "form" || was.open === cur.open) && ((cur.v !== "item" && cur.v !== "option" && cur.v !== "member") || was.sel === cur.sel);
   if (same) return;
   if (["menu", "sent", "whatsapp", "loading"].indexOf(cur.v) >= 0) state.hist = [];
   else if (!state.going && was && ["menu", "loading", "asked", "sent", "whatsapp"].indexOf(was.v) < 0) state.hist = state.hist.concat([was]).slice(-12);
@@ -397,7 +404,7 @@ async function chooseBiz(name) {
     if (!sc || !sc.business) throw new Error("none");
     if (sc.plugin) { state.plugin = sc.plugin; state.options = sc.options || state.options; }
     state.business = sc.business; state.bizName = (sc.plugin && sc.plugin.businessName) || (sc.contact && sc.contact.name) || slug;
-    state.data = {}; state.cart = {}; state.items = {}; state.hist = []; state.f.biz = ""; state.busy = false; state.view = "menu";
+    state.data = {}; state.cart = {}; state.items = {}; state.mem = {}; state.hist = []; state.f.biz = ""; state.busy = false; state.view = "menu";
     save(); render();
   } catch (e) { state.busy = false; state.error = "No business with that name was found here. Check the spelling, or ask in the chat."; render(); }
 }
@@ -579,6 +586,50 @@ function infoView() {
     '<div class="form" style="margin-top:14px">' + field("question", faqs.length ? "Something else?" : "Your question", { type: "textarea", placeholder: (q && q.example) || "" }) + errLine() +
     '<div class="actions">' + primary("Ask in the chat", "askq") + '</div><div class="note" style="margin-top:0">What you see here is the information the business has published. Other questions are answered in the chat from the same information.</div></div>' + links("question");
 }
+// ---- Members (version 0.12.0, coworking) ----
+// The business's published member businesses: a search box, its own industries and sites as filters, a member
+// on its own screen, and "Find a collaborator". The card only shows what each member published; the customer
+// writes or calls the member themselves.
+const memberArgs = (over) => { const d = state.data.members || {}; return clean(Object.assign({ query: v("mq"), industry: d.industry, location: d.location }, over || {})); };
+const membersAsk = (a) => (a.query ? "Which member businesses match " + a.query + "?" : "Which businesses are members here" + (a.industry ? " in " + a.industry : "") + (a.location ? " at " + a.location : "") + "?");
+const findMembers = (over) => { const o = opt("members"), a = memberArgs(over); run(o && o.tool, a, membersAsk(a)); };
+function membersView() {
+  const d = state.data.members || { items: [] };
+  const o = opt("members");
+  const inds = d.industries || [], locs = d.locations || [];
+  const chips = (list, attr, all, on) => '<div class="qs">' + chip(all, attr, "", !on) + list.map((x) => chip(esc(x.name) + " <small>" + x.count + "</small>", attr, x.name, x.name === on)).join("") + "</div>";
+  const head = top(o ? o.title : "Members") +
+    '<div class="find"><input type="search" data-f="mq" data-enter="mfind" value="' + esc(state.f.mq || "") + '" placeholder="A name, a kind of business, or what you need"><button class="btn" data-act="mfind">Search</button></div>' +
+    (inds.length ? chips(inds, "data-mind", "All", d.industry) : "") +
+    (locs.length > 1 ? '<div class="qlabel" style="margin-top:8px">Where</div>' + chips(locs, "data-mloc", "Anywhere", d.location) : "") +
+    '<div class="actions" style="margin:12px 0"><button class="btn go" data-act="collab">Find a collaborator</button></div>';
+  const items = d.items || [];
+  if (!items.length) return head + '<div class="empty">No member matches' + (d.query ? ' "' + esc(d.query) + '"' : "") + ". Try other words or another filter.</div>" + errLine() + links("members");
+  const rows = items.map((x) =>
+    '<div class="it"><button class="rowb" data-member="' + esc(x.id) + '"><div class="nm"><b>' + esc(x.name) + '</b><span class="qlabel">' + esc(x.industry) + "</span></div>" +
+    (x.description ? '<div class="bl clamp">' + esc(x.description) + "</div>" : "") + (x.why ? '<div class="bl clamp">' + esc(x.why) + "</div>" : "") + "</button></div>").join("");
+  return head + '<div class="list">' + rows + "</div>" + (d.more ? '<div class="note">' + d.more + " more: search or choose a filter to narrow the list.</div>" : "") + errLine() +
+    '<div class="note">Each member published these details itself. You contact a member directly; nobody introduces you or passes a message on.</div>' + links("members");
+}
+function memberView() {
+  const m = state.mem[state.sel];
+  if (!m) return membersView();
+  const row = (label, value) => (value ? "<tr><td>" + label + "</td><td>" + esc(value) + "</td></tr>" : "");
+  const web = /^https:\/\//.test(m.website), mail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m.email);
+  const facts = row("Looking for", m.lookingFor) + row("Offers", m.offers) + row("Phone", m.phone) + (web ? "" : row("Website", m.website)) + (mail ? row("Email", m.email) : "");
+  return top(m.name) + (m.industry || m.location ? '<div class="sum"><div><b>' + esc(m.industry || m.location) + "</b><span>" + esc(m.industry ? m.location : "") + "</span></div></div>" : "") +
+    (m.description ? '<p class="about" style="margin:0 0 4px">' + esc(m.description) + "</p>" : "") + (facts ? '<table class="tbl">' + facts + "</table>" : "") +
+    (web || mail ? '<div class="actions" style="margin-top:14px">' + (web ? '<button class="btn go" data-href="' + esc(m.website) + '">Website</button>' : "") +
+      (mail ? '<button class="btn" data-href="mailto:' + esc(m.email) + '">' + icon("mail") + "Email</button>" : "") + "</div>" : "") +
+    '<div class="note">These are the contact details ' + esc(m.name) + " published. You write or call them yourself: " + esc((state.data.members || {}).business || "the business") + " and BizPlug do not introduce you, pass a message on or vouch for a member.</div>";
+}
+function collabView() {
+  return '<div class="form">' + top("Find a collaborator") + '<div class="hint">Say what you need, what you can offer, or both, to see the members whose entries match.</div>' +
+    field("mneed", "What do you need?", { optional: true, placeholder: "e.g. help with a website" }) + field("moffer", "What can you offer?", { optional: true, placeholder: "e.g. bookkeeping for small teams" }) + errLine() +
+    '<div class="actions">' + primary("Show matching members", "match") + "</div>" +
+    '<div class="note" style="margin-top:0">Your words are matched against what each member published, above all what it offers and what it is looking for. You contact a member directly.</div></div>';
+}
+
 function requestView() {
   const k = state.pick || {};
   const request = opt("request");
@@ -624,6 +675,8 @@ function openOption(i) {
   if (!o) return;
   state.error = ""; state.hint = "";
   if (o.kind === "contact") { run(o.tool, {}, o.example); return; }
+  // 0.12.0: the member list opens unfiltered, by industry.
+  if (o.kind === "members") { state.f.mq = ""; run(o.tool, {}, o.example); return; }
   // 0.4.0: the business's published information and its questions and answers show in the card first.
   if (o.kind === "question" && nav() && inCard()) { state.open = i; run(o.tool, {}, "", () => { state.view = "form"; render(); }); return; }
   if (o.kind === "request" && inCard()) {
@@ -647,7 +700,7 @@ function render() {
   applyTheme(theme);
   if (nav()) track();
   const app = document.getElementById("app");
-  const views = { item: itemView, option: optionView, info: infoView, menu: menuView, form: formView, asked: askedView, catalog: catalogView, availability: availabilityView, slots: slotsView, estimate: estimateView, status: statusView, contact: contactView, request: requestView, sent: sentView, whatsapp: whatsappView };
+  const views = { item: itemView, option: optionView, info: infoView, menu: menuView, form: formView, asked: askedView, catalog: catalogView, availability: availabilityView, slots: slotsView, estimate: estimateView, status: statusView, contact: contactView, request: requestView, sent: sentView, whatsapp: whatsappView, members: membersView, member: memberView, collab: collabView };
   const body = state.view === "loading" || !state.plugin ? '<div class="empty">Loading…</div>' : (views[state.view] || menuView)();
   app.innerHTML = header() + body + (state.view === "menu" ? (nav() && state.busy ? '<div class="note">Working…</div>' : "") + contactBar() : "");
   const on = (sel, fn) => app.querySelectorAll(sel).forEach((el) => el.addEventListener("click", () => fn(el)));
@@ -696,7 +749,14 @@ function render() {
   on('[data-act="askq"]', () => guard(() => { need(v("question"), "Type your question."); ask(v("question")); }));
   on("[data-biz]", (b) => chooseBiz(b.dataset.biz));
   on('[data-act="biz"]', () => chooseBiz(v("biz")));
-  on('[data-act="unbiz"]', () => { state.business = ""; state.bizName = ""; state.data = {}; state.cart = {}; state.items = {}; state.hist = []; state.error = ""; save(); render(); });
+  on('[data-act="unbiz"]', () => { state.business = ""; state.bizName = ""; state.data = {}; state.cart = {}; state.items = {}; state.mem = {}; state.options = state.options.filter((o) => o.kind !== "members"); state.hist = []; state.error = ""; save(); render(); });
+  // ---- Members (version 0.12.0) ----
+  on('[data-act="mfind"]', () => findMembers());
+  on("[data-mind]", (b) => findMembers({ industry: b.dataset.mind }));
+  on("[data-mloc]", (b) => findMembers({ location: b.dataset.mloc }));
+  on("[data-member]", (b) => { state.sel = b.dataset.member; state.view = "member"; state.error = ""; render(); });
+  on('[data-act="collab"]', () => { state.view = "collab"; state.error = ""; render(); });
+  on('[data-act="match"]', () => guard(() => { need(v("mneed") || v("moffer"), "Say what you need or what you can offer."); state.f.mq = [v("mneed"), v("moffer")].filter(Boolean).join(" "); findMembers({ industry: "", location: "" }); }));
   const filter = app.querySelector("[data-filter]");
   const applyFilter = () => { const w = String(state.f.filter || "").toLowerCase().trim(); app.querySelectorAll(".faq").forEach((el) => { el.style.display = !w || el.dataset.text.indexOf(w) >= 0 ? "" : "none"; }); };
   if (filter) { applyFilter(); filter.addEventListener("input", () => { state.f.filter = filter.value; applyFilter(); }); }

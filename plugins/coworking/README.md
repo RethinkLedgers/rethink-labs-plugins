@@ -1,6 +1,6 @@
 # BizPlug Coworking & Offices
 
-Version 0.11.0. Desk and office availability and rates for coworking & offices businesses.
+Version 0.12.0. Desk and office availability and rates for coworking & offices businesses.
 
 - Main function: Desk and office availability and rates
 - MCP server URL: `https://mcp.bizplug.ai/plugin/coworking` (streamable HTTP, no sign-in)
@@ -13,6 +13,7 @@ Version 0.11.0. Desk and office availability and rates for coworking & offices b
 - **Request the booking**: Send a booking request. The business confirms it; nothing is held or charged here.
 - **Ask a question**: Answers from the business's own information: memberships, amenities and tour requests.
 - **Booking status**: Check a booking request with its reference.
+- **Members**: The member businesses here, when the business has published its member list: find one by name, kind of business, or what you need or offer, and contact it directly.
 - **Contact the business**: Phone, email, website and opening hours.
 
 ## Tools
@@ -25,9 +26,11 @@ Version 0.11.0. Desk and office availability and rates for coworking & offices b
 | `get_booking_status` | Look up the status of a booking request by its reference. |
 | `get_business_info` | Answer a general question about this coworking & offices business using only its published profile: memberships, amenities and tour requests. Creates nothing. If the profile does not cover the question, say so and use get_contact. |
 | `get_contact` | Return the business's published contact details and opening hours for anything the other tools cannot do. |
+| `find_members` | Find the member businesses of this coworking & offices business, from the member list it published. Search by a name, a kind of business, or what the person needs or offers, optionally narrowed to an industry or a location; with no query it lists the members by industry. Returns each match with its description, what it is looking for, what it offers and its published contact details. Creates nothing and sends nothing. Contact is direct: the person writes or calls the member themselves, and neither the coworking business nor BizPlug introduces, forwards or vouches. Share only what the member published. |
 
 ## Changes
 
+- **0.12.0** (17 November 2026): Coworking & Offices: a business can publish its member businesses, so people can find a member by name, kind of business or what they need or offer, and contact it directly.
 - **0.11.0** (17 November 2026): Every tool states whether it only reads, whether its action can be taken back and whether it reaches outside the business's own data, as ChatGPT's plug-in directory requires.
 - **0.10.0** (17 November 2026): The plug-in introduces itself to ChatGPT and other clients with a description and a website, and BizPlug's industry-wide plug-ins with the BizPlug logo, privacy policy, terms and support contact.
 - **0.9.0** (16 November 2026): Checkout on the business's own Stripe or Checkout.com account, when it has connected one: customers pay for an order or booking right after the request, and the status check asks the provider whether it was paid.

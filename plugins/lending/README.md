@@ -1,6 +1,6 @@
 # BizPlug Lending & Mortgages
 
-Version 0.11.0. Book a loan or mortgage consultation for lending & mortgages businesses.
+Version 0.12.0. Book a loan or mortgage consultation for lending & mortgages businesses.
 
 - Main function: Book a loan or mortgage consultation
 - MCP server URL: `https://mcp.bizplug.ai/plugin/lending` (streamable HTTP, no sign-in)
@@ -28,6 +28,7 @@ Version 0.11.0. Book a loan or mortgage consultation for lending & mortgages bus
 
 ## Changes
 
+- **0.12.0** (17 November 2026): Coworking & Offices: a business can publish its member businesses, so people can find a member by name, kind of business or what they need or offer, and contact it directly.
 - **0.11.0** (17 November 2026): Every tool states whether it only reads, whether its action can be taken back and whether it reaches outside the business's own data, as ChatGPT's plug-in directory requires.
 - **0.10.0** (17 November 2026): The plug-in introduces itself to ChatGPT and other clients with a description and a website, and BizPlug's industry-wide plug-ins with the BizPlug logo, privacy policy, terms and support contact.
 - **0.9.0** (16 November 2026): Checkout on the business's own Stripe or Checkout.com account, when it has connected one: customers pay for an order or booking right after the request, and the status check asks the provider whether it was paid.

@@ -6,6 +6,7 @@ You are helping a business prepare the data BizPlug needs to deploy its Coworkin
 - Passwords, API keys or other secrets.
 - Card numbers, bank details or government ID numbers.
 - Customers' personal data (names, phone numbers, addresses, health or financial details).
+- In members.csv: a member business that has not agreed to be listed, or a named person's private email, phone number or address. Company-level contact details only.
 
 ## Files to prepare
 
@@ -74,6 +75,26 @@ Columns (first row of the file, exactly these names):
 How to collect it:
 1. Take the FAQ page of the website first, then policies (cancellation, delivery, payment, parking, accessibility).
 2. Keep each answer factual and current. Leave out anything the owner has not confirmed.
+
+### members.csv (optional, up to 500 rows)
+The member businesses people can find in the plug-in and contact directly. List only members that agreed to be listed.
+
+Columns (first row of the file, exactly these names):
+- `name` (required): Member business, text. The company's name, as it trades. Example: Northside Design Studio
+- `industry`: Industry, text. A short label people can filter by. Use the same label for similar members. Example: Design
+- `description`: What it does, text. One sentence. Example: Brand and web design for small businesses.
+- `location`: Site or floor, text. Which site or floor, when there is more than one. Example: 2nd floor
+- `website`: Website, url. Full URL of the company's website. Example: https://example.com
+- `email`: General email, email. The company's general mailbox, never a named person's private address. Example: hello@example.com
+- `phone`: General phone, text. The company's switchboard, with country code. Never a personal mobile number. Example: +1 704 555 0142
+- `looking_for`: Looking for, text. What the member wants to collaborate on or is looking for. Example: Developers to partner with on client websites
+- `offers`: Offers, text. What the member can offer other members or visitors. Example: A free 30-minute brand review for other members
+
+How to collect it:
+1. List only member businesses that agreed to be listed in the plug-in. Ask each one first, and leave out any that did not answer.
+2. Take each member's details from the member itself or its own website: one sentence on what it does, what it is looking for and what it offers, in its own words.
+3. Company-level contact details only: a general mailbox and a switchboard number. Never a named person's private email, mobile number or home address; leave the cell empty instead.
+4. People contact a member directly with these details. Neither the business nor BizPlug introduces or forwards, so publish only what the member is happy to be contacted on.
 
 ## Format
 - UTF-8 CSV with a header row; comma separated; quote cells that contain commas, quotes or line breaks.

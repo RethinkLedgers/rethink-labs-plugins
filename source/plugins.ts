@@ -7,7 +7,7 @@ import { pricing } from "@/lib/pricing";
 import { siteConfig } from "@/lib/seo";
 import { directoryPath, type DirectoryDef } from "@/lib/directory-store";
 
-export const PLUGIN_VERSION = "0.11.0"; // versions and their notes: plugin-versions.ts
+export const PLUGIN_VERSION = "0.12.0"; // versions and their notes: plugin-versions.ts
 export const MCP_HOST = "https://mcp.bizplug.ai";
 /** Where plug-ins published to test from the client portal answer: the same app, on its test host. */
 export const MCP_TEST_HOST = "https://mcp-test.bizplug.ai";
@@ -30,7 +30,7 @@ export type PluginTestCase = { prompt: string; expect: string; shouldTrigger: bo
 
 /** One option of a plug-in's menu: what show_menu returns in ChatGPT and what the plug-in pages list. */
 /** `kind` tells the ChatGPT card (widgets/plugin-widget.ts) which inputs the option asks for. */
-export type MenuKind = "lookup" | "request" | "question" | "status" | "contact";
+export type MenuKind = "lookup" | "request" | "question" | "status" | "contact" | "members";
 export type MenuOption = { tool: string; kind: MenuKind; title: string; description: string; example: string };
 
 export type IndustryPlugin = {
@@ -50,6 +50,14 @@ export type IndustryPlugin = {
 };
 
 const lower = (s: string) => s.toLowerCase();
+
+/**
+ * Industries whose businesses may publish their member businesses (`members` in industry-functions.ts; coworking)
+ * get this tool and a Members menu option, from plug-in version 0.12.0. The server (plugin-mcp.ts) shows the
+ * option only for a business that published a member list.
+ */
+export const MEMBERS_TOOL = "find_members";
+const MEMBERS_DIRECT = "Contact is direct: the person writes or calls the member themselves, and neither the coworking business nor BizPlug introduces, forwards or vouches.";
 
 // [look-up, request, status] descriptions per engine. {n} is the industry's noun.
 const TOOL_COPY: Record<Engine, [string, string, string]> = {
@@ -123,6 +131,9 @@ function buildMenu(i: Industry, fn: IndustryFunction): MenuOption[] {
     step(1),
     { tool: "get_business_info", kind: "question", title: "Ask a question", description: `Answers from the business's own information: ${i.covers}.`, example: i.ask },
     step(2),
+    ...(fn.members
+      ? [{ tool: MEMBERS_TOOL, kind: "members" as const, title: "Members", description: "The member businesses here, when the business has published its member list: find one by name, kind of business, or what you need or offer, and contact it directly.", example: "Which member businesses here could help with web design?" }]
+      : []),
     { tool: "get_contact", kind: "contact", title: "Contact the business", description: "Phone, email, website and opening hours.", example: "How do I contact the business?" },
   ];
 }
@@ -157,6 +168,16 @@ export function buildPlugin(i: Industry): IndustryPlugin {
       description: "Return the business's published contact details and opening hours for anything the other tools cannot do.",
       readOnly: true,
     },
+    ...(fn.members
+      ? [
+          {
+            name: MEMBERS_TOOL,
+            title: "Members",
+            description: `Find the member businesses of this ${noun} business, from the member list it published. Search by a name, a kind of business, or what the person needs or offers, optionally narrowed to an industry or a location; with no query it lists the members by industry. Returns each match with its description, what it is looking for, what it offers and its published contact details. Creates nothing and sends nothing. ${MEMBERS_DIRECT} Share only what the member published.`,
+            readOnly: true,
+          },
+        ]
+      : []),
   ];
   return {
     slug: i.slug,
@@ -174,6 +195,9 @@ export function buildPlugin(i: Industry): IndustryPlugin {
       { prompt: fn.title, expect: `Calls ${fn.tools[0]} and answers from the published profile.`, shouldTrigger: true },
       { prompt: i.ask, expect: "Answers from the business profile, or says it is not covered and offers contact details.", shouldTrigger: true },
       { prompt: "Go ahead and send it.", expect: `Calls ${fn.tools[1]} only after the customer has confirmed the details, and reports that the business still has to confirm.`, shouldTrigger: true },
+      ...(fn.members
+        ? [{ prompt: "Which member businesses here could help with web design?", expect: `Calls ${MEMBERS_TOOL} and lists the matching members with their published contact details, or says the business has not published a member list; says the customer contacts a member directly and offers no introduction.`, shouldTrigger: true }]
+        : []),
       { prompt: "Write me a poem about the ocean.", expect: "Does not call any tool.", shouldTrigger: false },
     ],
     mcpUrl: `${MCP_HOST}/plugin/${i.slug}`,
