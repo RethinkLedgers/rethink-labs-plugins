@@ -1,6 +1,6 @@
 # BizPlug Meal Kits & Subscriptions
 
-Version 0.13.0. Pick a plan and order a weekly box for meal kits & subscriptions businesses.
+Version 0.14.0. Pick a plan and order a weekly box for meal kits & subscriptions businesses.
 
 - Main function: Pick a plan and order a weekly box
 - MCP server URL: `https://mcp.bizplug.ai/plugin/meal-kits` (streamable HTTP, no sign-in)
@@ -28,6 +28,7 @@ Version 0.13.0. Pick a plan and order a weekly box for meal kits & subscriptions
 
 ## Changes
 
+- **0.14.0** (18 November 2026): A business's plug-in shows its full name in ChatGPT, the business's name with what it is, and its own logo as the plug-in's icon.
 - **0.13.0** (18 November 2026): A pay step in the card after a request with checkout: the total, a Pay now button to the business's own checkout page, and an I've paid button that checks the payment.
 - **0.12.0** (17 November 2026): Coworking & Offices: a business can publish its member businesses, so people can find a member by name, kind of business or what they need or offer, and contact it directly.
 - **0.11.0** (17 November 2026): Every tool states whether it only reads, whether its action can be taken back and whether it reaches outside the business's own data, as ChatGPT's plug-in directory requires.
