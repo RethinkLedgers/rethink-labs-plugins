@@ -71,7 +71,7 @@ export type PluginFeatures = {
 export type PluginVersion = {
   version: string;
   date: string; // ISO date
-  /** One sentence on what changed, for the public pages and the package READMEs. */
+  /** One sentence on what changed, for the package READMEs. */
   summary: string;
   /** What is new, in the client's words. Shown in the portal next to the Upgrade button. */
   notes: string[];
