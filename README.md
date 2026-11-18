@@ -59,10 +59,11 @@ Sign up at https://bizplug.ai/portal, pick your industry and provide the data it
 
 Plug-ins from other companies can be listed in the BizPlug marketplace next to the industry plug-ins. Do not open a pull request here: this repository is generated, so submit through https://bizplug.ai/marketplace#submit. [CONTRIBUTING.md](CONTRIBUTING.md) explains the process and the components a valid plug-in must have: an MCP server over streamable HTTP, `plugin.json`, `mcp.json`, a README, review test cases, and a privacy policy and terms.
 
-## Version 0.12.0
+## Version 0.13.0
 
 All 80 plug-ins share one version. What changed in each:
 
+- **0.13.0** (18 November 2026): A pay step in the card after a request with checkout: the total, a Pay now button to the business's own checkout page, and an I've paid button that checks the payment.
 - **0.12.0** (17 November 2026): Coworking & Offices: a business can publish its member businesses, so people can find a member by name, kind of business or what they need or offer, and contact it directly.
 - **0.11.0** (17 November 2026): Every tool states whether it only reads, whether its action can be taken back and whether it reaches outside the business's own data, as ChatGPT's plug-in directory requires.
 - **0.10.0** (17 November 2026): The plug-in introduces itself to ChatGPT and other clients with a description and a website, and BizPlug's industry-wide plug-ins with the BizPlug logo, privacy policy, terms and support contact.

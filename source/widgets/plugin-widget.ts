@@ -120,6 +120,15 @@ html,body{background:var(--bg);color:var(--fg);font:15px/1.4 ui-sans-serif,syste
 .tbl td:first-child{color:var(--muted);width:90px}
 .sent ol{padding-left:18px;display:grid;gap:4px;font-size:13px;margin-top:6px}
 .sent strong{color:var(--fg)}
+.pay{margin-top:12px;padding:14px;border-radius:16px;border:1px solid var(--line);background:linear-gradient(135deg,var(--glow),transparent)}
+.pay .amt{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pay .amt b{font-size:22px}
+.pay .amt span{color:var(--muted);font-size:12.5px}
+.pay .tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;background:#f5b94233;color:#f5b942}
+.pay .actions{margin-top:10px}
+.pay p{color:var(--muted);font-size:12.5px;margin-top:8px}
+.paid{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-weight:700;font-size:13px;background:#2fbf7133;color:#2fbf71}
+.wait{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-weight:700;font-size:13px;background:var(--card);color:var(--muted);border:1px solid var(--line)}
 .actions.sticky{margin-top:12px}
 .navs{display:flex;gap:14px;align-items:center;flex:none}
 .rowb{all:unset;display:block;width:100%;cursor:pointer;box-sizing:border-box}
@@ -551,7 +560,11 @@ function statusView() {
   const s = state.data.status || {};
   const body = s.missing ? '<div class="sum"><div><b>' + esc(s.ref || "No reference") + "</b><span>No status is published for this reference. The business replies to requests by email.</span></div></div>"
     : '<div class="sum"><div><b>' + esc(s.status) + "</b><span>" + esc(s.ref) + (s.updated ? " · updated " + esc(s.updated) : "") + "</span></div></div>" + (s.note ? '<div class="note">' + esc(s.note) + "</div>" : "");
-  return top("Status") + body + '<div class="actions" style="margin-top:12px"><button class="btn" data-act="status">Check another</button></div>' + links("status");
+  // 0.13.0: a payment's state, from the provider via the status tool.
+  const pay = s.pay ? '<div style="margin:4px 0 6px">' + (s.pay.paid ? '<span class="paid">\u2713 Paid ' + esc(s.pay.total) + "</span>" : s.pay.waiting ? '<span class="wait">Waiting for payment</span>' : '<span class="wait">Not paid</span>') + "</div>" : "";
+  if (s.pay && s.pay.waiting) state.payRef = s.ref;
+  const again = s.pay && s.pay.waiting ? '<button class="btn" data-act="paid">Check again</button>' : "";
+  return top("Status") + pay + body + '<div class="actions" style="margin-top:12px">' + again + '<button class="btn" data-act="status">Check another</button></div>' + links("status");
 }
 function linkButtons(list) {
   return (list || []).filter((l) => l && /^https:\/\//.test(l.href)).slice(0, 12).map((l) => '<button class="btn" data-href="' + esc(l.href) + '">' + esc(l.label) + "</button>").join("");
@@ -627,7 +640,7 @@ function collabView() {
   return '<div class="form">' + top("Find a collaborator") + '<div class="hint">Say what you need, what you can offer, or both, to see the members whose entries match.</div>' +
     field("mneed", "What do you need?", { optional: true, placeholder: "e.g. help with a website" }) + field("moffer", "What can you offer?", { optional: true, placeholder: "e.g. bookkeeping for small teams" }) + errLine() +
     '<div class="actions">' + primary("Show matching members", "match") + "</div>" +
-    '<div class="note" style="margin-top:0">Your words are matched against each member's entry, above all what it offers and what it is looking for. You contact a member directly.</div></div>';
+    '<div class="note" style="margin-top:0">Your words are matched against each member&rsquo;s entry, above all what it offers and what it is looking for. You contact a member directly.</div></div>';
 }
 
 function requestView() {
@@ -645,9 +658,22 @@ function requestView() {
     '<div class="actions">' + primary("Send request", "request") + '<button class="btn" data-act="unpick">Back</button></div>' +
     '<div class="note">The business confirms every request itself. Nothing is booked, held or charged here.</div></div>';
 }
+// 0.13.0: the pay step. The total and the provider come from the server; the card only opens the provider's own page
+// (card details are never typed here) and asks the status tool whether it was paid.
+function payBox(s) {
+  const pay = s.pay;
+  if (!pay || !/^https:\/\//.test(pay.url)) return "";
+  state.payRef = s.reference;
+  return '<div class="pay"><div class="amt"><div><span>To pay' + (pay.testMode ? '<span class="tag">TEST</span>' : "") + "</span><b>" + esc(pay.total) + "</b></div><span>" + esc(pay.provider) + " checkout</span></div>" +
+    '<div class="actions"><button class="primary" data-href="' + esc(pay.url) + '">Pay now</button>' + (opt("status") ? '<button class="btn" data-act="paid">I\u2019ve paid</button>' : "") + "</div>" +
+    "<p>You pay on " + esc(pay.provider) + "\u2019s page, in the business\u2019s name. Card details are never entered in ChatGPT." + (pay.testMode ? " Test mode: no real money; use the test card 4242 4242 4242 4242." : "") + " The page stays open for 30 minutes.</p></div>";
+}
 function sentView() {
   const s = state.data.sent || { lines: [] };
-  return '<div class="sent"><b>Request sent</b><p>Reference <strong>' + esc(s.reference) + "</strong></p>" + s.lines.map((l) => "<p>" + esc(l) + "</p>").join("") + '<p class="note">' + esc(s.note) + '</p></div><div class="actions" style="margin-top:12px"><button class="btn" data-view="menu">← Menu</button>' + (s.whatsapp ? '<button class="btn wa" data-href="' + esc(s.whatsapp) + '">' + icon("whatsapp") + "Message on WhatsApp</button>" : "") + linkButtons(s.links) + contactButton() + "</div>";
+  const box = payBox(s);
+  // A card that draws the pay step drops the same link from the plain buttons.
+  const others = box ? (s.links || []).filter((l) => !s.pay || l.href !== s.pay.url) : s.links;
+  return '<div class="sent"><b>Request sent</b><p>Reference <strong>' + esc(s.reference) + "</strong></p>" + s.lines.map((l) => "<p>" + esc(l) + "</p>").join("") + '<p class="note">' + esc(s.note) + "</p></div>" + box + '<div class="actions" style="margin-top:12px"><button class="btn" data-view="menu">← Menu</button>' + (s.whatsapp ? '<button class="btn wa" data-href="' + esc(s.whatsapp) + '">' + icon("whatsapp") + "Message on WhatsApp</button>" : "") + linkButtons(others) + contactButton() + "</div>";
 }
 // 0.4.0: from a sent request, the business's contact details are one tap away.
 function contactButton() {
@@ -718,6 +744,7 @@ function render() {
     run(o.tool, f.args(), fallback);
   }));
   on('[data-act="again"]', () => { state.open = state.options.findIndex((x) => x.kind === "lookup"); state.hint = ""; state.view = "form"; state.error = ""; render(); });
+  on('[data-act="paid"]', () => { const st = opt("status"); if (state.payRef && st) run(st.tool, { reference: state.payRef }, "I have paid. What is the status of " + state.payRef + "?"); });
   on('[data-act="status"]', () => { state.open = state.options.findIndex((x) => x.kind === "status"); state.hint = ""; state.view = "form"; state.error = ""; render(); });
   on("[data-more]", (b) => { state.cart[b.dataset.more] = Math.min((state.cart[b.dataset.more] || 0) + 1, 99); render(); });
   on("[data-less]", (b) => { state.cart[b.dataset.less] = Math.max((state.cart[b.dataset.less] || 0) - 1, 0); render(); });
