@@ -18,6 +18,7 @@ Columns (first row of the file, exactly these names):
 - `email` (required): Public email, email. The address customers may write to. Example: hello@example.com
 - `phone`: Public phone, text. With country code. Example: +1 704 555 0100
 - `website`: Website, url. Full URL. Example: https://example.com
+- `logo`: Logo URL, url. Your own logo as an https image, square if you have one. Shown next to your plug-in in the BizPlug portal. Example: https://example.com/logo.png
 - `address`: Address, text. Street address, if customers visit. Example: 123 Main St, Charlotte, NC 28202
 - `city`: City, text.  Example: Charlotte
 - `region`: State or country, text.  Example: NC

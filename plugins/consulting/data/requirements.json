@@ -54,6 +54,14 @@
           "help": "Full URL."
         },
         {
+          "key": "logo",
+          "label": "Logo URL",
+          "required": false,
+          "type": "url",
+          "example": "https://example.com/logo.png",
+          "help": "Your own logo as an https image, square if you have one. Shown next to your plug-in in the BizPlug portal."
+        },
+        {
           "key": "address",
           "label": "Address",
           "required": false,

@@ -62,6 +62,7 @@ const businessDataset = (name: string, ex?: IndustryExample): Dataset => ({
     col("email", "Public email", true, "email", "hello@example.com", "The address customers may write to."),
     col("phone", "Public phone", false, "text", "+1 704 555 0100", "With country code."),
     col("website", "Website", false, "url", "https://example.com", "Full URL."),
+    col("logo", "Logo URL", false, "url", "https://example.com/logo.png", "Your own logo as an https image, square if you have one. Shown next to your plug-in in the BizPlug portal."),
     col("address", "Address", false, "text", "123 Main St, Charlotte, NC 28202", "Street address, if customers visit."),
     col("city", "City", false, "text", "Charlotte", ""),
     col("region", "State or country", false, "text", "NC", ""),
