@@ -52,12 +52,15 @@ export type IndustryPlugin = {
 const lower = (s: string) => s.toLowerCase();
 
 /**
- * Industries whose businesses may publish their member businesses (`members` in industry-functions.ts; coworking)
+ * Industries whose businesses may publish their member businesses (`members` in industry-functions.ts; coworking, chambers)
  * get this tool and a Members menu option, from plug-in version 0.12.0. The server (plugin-mcp.ts) shows the
  * option only for a business that published a member list.
  */
 export const MEMBERS_TOOL = "find_members";
-const MEMBERS_DIRECT = "Contact is direct: the person writes or calls the member themselves, and neither the coworking business nor BizPlug introduces, forwards or vouches.";
+/** Who publishes the member list, in the tool copy: coworking's wording is unchanged since 0.12.0. */
+const MEMBERS_HOST: Record<string, string> = { coworking: "the coworking business", chambers: "the chamber or association" };
+const membersDirect = (slug: string) =>
+  `Contact is direct: the person writes or calls the member themselves, and neither ${MEMBERS_HOST[slug] ?? "the business"} nor BizPlug introduces, forwards or vouches.`;
 
 // [look-up, request, status] descriptions per engine. {n} is the industry's noun.
 const TOOL_COPY: Record<Engine, [string, string, string]> = {
@@ -126,10 +129,10 @@ function buildMenu(i: Industry, fn: IndustryFunction): MenuOption[] {
   const example = (idx: 0 | 1 | 2) => (engine === "stay" && idx === 0 ? STAY_FIRST[fn.span ?? "single"] : MENU_EXAMPLES[engine][idx]);
   const KINDS = ["lookup", "request", "status"] as const;
   const step = (idx: 0 | 1 | 2): MenuOption => ({ tool: tools[idx], kind: KINDS[idx], title: TITLES[engine][idx], description: MENU_COPY[engine][idx], example: example(idx) });
+  const question: MenuOption = { tool: "get_business_info", kind: "question", title: "Ask a question", description: `Answers from the business's own information: ${i.covers}.`, example: i.ask };
+  // A plug-in that mainly explains the business (chambers) starts with its questions and answers.
   return [
-    step(0),
-    step(1),
-    { tool: "get_business_info", kind: "question", title: "Ask a question", description: `Answers from the business's own information: ${i.covers}.`, example: i.ask },
+    ...(fn.infoFirst ? [question, step(1), step(0)] : [step(0), step(1), question]),
     step(2),
     ...(fn.members
       ? [{ tool: MEMBERS_TOOL, kind: "members" as const, title: "Members", description: "The member businesses here, when the business has published its member list: find one by name, kind of business, or what you need or offer, and contact it directly.", example: "Which member businesses here could help with web design?" }]
@@ -173,7 +176,7 @@ export function buildPlugin(i: Industry): IndustryPlugin {
           {
             name: MEMBERS_TOOL,
             title: "Members",
-            description: `Find the member businesses of this ${noun} business, from the member list it published. Search by a name, a kind of business, or what the person needs or offers, optionally narrowed to an industry or a location; with no query it lists the members by industry. Returns each match with its description, what it is looking for, what it offers and its published contact details. Creates nothing and sends nothing. ${MEMBERS_DIRECT} Share only what the business lists for a member.`,
+            description: `Find the member businesses of this ${noun} business, from the member list it published. Search by a name, a kind of business, or what the person needs or offers, optionally narrowed to an industry or a location; with no query it lists the members by industry. Returns each match with its description, what it is looking for, what it offers and its published contact details. Creates nothing and sends nothing. ${membersDirect(i.slug)} Share only what the business lists for a member.`,
             readOnly: true,
           },
         ]
@@ -192,7 +195,7 @@ export function buildPlugin(i: Industry): IndustryPlugin {
     menu: buildMenu(i, fn),
     testCases: [
       { prompt: "What can this plug-in do?", expect: "Calls show_menu, which shows the menu card; does not list the options again, or lists them exactly as returned where there is no card.", shouldTrigger: true },
-      { prompt: fn.title, expect: `Calls ${fn.tools[0]} and answers from the published profile.`, shouldTrigger: true },
+      { prompt: fn.title, expect: `Calls ${fn.infoFirst ? "get_business_info" : fn.tools[0]} and answers from the published profile.`, shouldTrigger: true },
       { prompt: i.ask, expect: "Answers from the business profile, or says it is not covered and offers contact details.", shouldTrigger: true },
       { prompt: "Go ahead and send it.", expect: `Calls ${fn.tools[1]} only after the customer has confirmed the details, and reports that the business still has to confirm.`, shouldTrigger: true },
       ...(fn.members

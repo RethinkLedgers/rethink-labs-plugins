@@ -104,8 +104,8 @@ const servicesDataset = (ex?: IndustryExample): Dataset => ({
   collect: ["List the services from the website's services or about page, one per row, short names only."],
 });
 
-// Coworking only (`members` in industry-functions.ts): the member businesses find_members searches, from plug-in
-// version 0.12.0. Company-level details of members that agreed to be listed; never a named person's.
+// Coworking and chambers (`members` in industry-functions.ts): the member businesses find_members searches, from
+// plug-in version 0.12.0. Company-level details of members that agreed to be listed; never a named person's.
 const membersDataset: Dataset = {
   id: "members",
   file: "members.csv",
@@ -130,6 +130,15 @@ const membersDataset: Dataset = {
     "Company-level contact details only: a general mailbox and a switchboard number. Never a named person's private email, mobile number or home address; leave the cell empty instead.",
     "People contact a member directly with these details. Neither the business nor BizPlug introduces or forwards, so publish only what the member is happy to be contacted on.",
   ],
+};
+
+// A chamber's members are spread over a city or region: the location column is where the member is based.
+const chamberMembersDataset: Dataset = {
+  ...membersDataset,
+  columns: membersDataset.columns.map((c) =>
+    c.key === "location" ? col("location", "City or area", false, "text", "South End, Charlotte", "Where the member is based, so people can filter by area.")
+    : c.key === "offers" ? col("offers", "Offers", false, "text", "A discount on brand reviews for fellow members", "What the member can offer other members or visitors.")
+    : c),
 };
 
 function engineDatasets(engine: Engine, noun: string, ex?: IndustryExample): Dataset[] {
@@ -284,6 +293,7 @@ function engineDatasets(engine: Engine, noun: string, ex?: IndustryExample): Dat
 /** Extra rules for industries where uploads could carry sensitive data. Engine notes are added automatically. */
 const INDUSTRY_NOTES: Partial<Record<string, string[]>> = {
   coworking: ["In members.csv: a member business that has not agreed to be listed, or a named person's private email, phone number or address. Company-level contact details only."],
+  chambers: ["In members.csv: a member business that has not agreed to be listed, or a named person's private email, phone number or address. Company-level contact details only.", "Member-only documents, board papers or anything the chamber does not publish to the public."],
   pharmacy: ["Never upload prescriptions, medication lists or patient records."],
   "mental-health": ["Never upload client names, notes or diagnoses."],
 };
@@ -304,7 +314,7 @@ export function dataSpec(industry: string): PluginDataSpec | null {
     name: ind.name,
     engine: fn.engine,
     functionTitle: fn.title,
-    datasets: [businessDataset(ind.name, ex), ...engineDatasets(fn.engine, fn.noun, ex), servicesDataset(ex), faqDataset(ex), ...(fn.members ? [membersDataset] : [])],
+    datasets: [businessDataset(ind.name, ex), ...engineDatasets(fn.engine, fn.noun, ex), servicesDataset(ex), faqDataset(ex), ...(fn.members ? [industry === "chambers" ? chamberMembersDataset : membersDataset] : [])],
     never: [...BASE_NEVER, ...(INDUSTRY_NOTES[industry] ?? []), ...(fn.note ? [`The plug-in's own rule: ${fn.note}`] : [])],
   };
 }

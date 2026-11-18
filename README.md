@@ -4,7 +4,7 @@
 
 Published by **Bart Cant - Rethink Labs**.
 
-The standard BizPlug plug-in for each of 80 industries. A plug-in is an MCP (Model Context Protocol) server, hosted by BizPlug, that lets a business's customers ask questions and send orders, bookings or requests from inside ChatGPT. The business confirms every request itself. Customers pay the business directly: a Pay online button after a request opens the business's own payment page (Stripe is the official payment provider; PayPal, Square and other payment pages work too), and the money never passes through BizPlug.
+The standard BizPlug plug-in for each of 81 industries. A plug-in is an MCP (Model Context Protocol) server, hosted by BizPlug, that lets a business's customers ask questions and send orders, bookings or requests from inside ChatGPT. The business confirms every request itself. Customers pay the business directly: a Pay online button after a request opens the business's own payment page (Stripe is the official payment provider; PayPal, Square and other payment pages work too), and the money never passes through BizPlug.
 
 This repository holds the plug-in **packages**: what each plug-in is called, what its tools do, where its server lives and what data a business provides to get its own copy. It is generated from the BizPlug website's data files on every release, so please do not edit it by hand. It also holds the source files those packages are generated from (see below). The server that answers the tools and all business data are not part of this repository.
 
@@ -26,7 +26,7 @@ plugins/<industry>/
   data/AGENT_INSTRUCTIONS.md   how a person or an AI agent collects and submits that data
 ```
 
-Every plug-in has the same six tools: a menu (`show_menu`), a look-up, a request, a status check, `get_business_info` and `get_contact`. The look-up, request and status tools are named for the industry, for example `get_menu`, `place_pickup_order` and `get_order_status` for Coffee Shops & Cafes. Coworking & Offices has one more, `find_members`, which finds the member businesses a business has published; a person contacts a member directly.
+Every plug-in has the same six tools: a menu (`show_menu`), a look-up, a request, a status check, `get_business_info` and `get_contact`. The look-up, request and status tools are named for the industry, for example `get_menu`, `place_pickup_order` and `get_order_status` for Coffee Shops & Cafes. Chambers of Commerce & Business Associations, Coworking & Offices have one more, `find_members`, which finds the member businesses a business has published; a person contacts a member directly.
 
 ## Source
 
@@ -61,7 +61,7 @@ Plug-ins from other companies can be listed in the BizPlug marketplace next to t
 
 ## Version 0.13.0
 
-All 80 plug-ins share one version. What changed in each:
+All 81 plug-ins share one version. What changed in each:
 
 - **0.13.0** (18 November 2026): A pay step in the card after a request with checkout: the total, a Pay now button to the business's own checkout page, and an I've paid button that checks the payment.
 - **0.12.0** (17 November 2026): Coworking & Offices: a business can publish its member businesses, so people can find a member by name, kind of business or what they need or offer, and contact it directly.
@@ -79,7 +79,7 @@ All 80 plug-ins share one version. What changed in each:
 
 A business's own plug-in stays on the version it was published with until the business upgrades it.
 
-## The 80 plug-ins
+## The 81 plug-ins
 
 ### Business essentials
 
@@ -182,6 +182,7 @@ A business's own plug-in stays on the version it was published with until the bu
 | [Wealth & Investing](plugins/wealth) | Book an intro meeting with an advisor | `https://mcp.bizplug.ai/plugin/wealth` |
 | [Crypto & Fintech](plugins/crypto) | Fee estimate and onboarding request | `https://mcp.bizplug.ai/plugin/crypto` |
 | [Tax & Accounting](plugins/accounting) | Book a tax or bookkeeping consult | `https://mcp.bizplug.ai/plugin/accounting` |
+| [Chambers of Commerce & Business Associations](plugins/chambers) | Chamber information, membership enquiries and member businesses | `https://mcp.bizplug.ai/plugin/chambers` |
 | [Recruiting & Staffing](plugins/recruiting) | Book an intro call for employers or candidates | `https://mcp.bizplug.ai/plugin/recruiting` |
 | [HR & Internal Comms](plugins/hr-comms) | Book a platform demo | `https://mcp.bizplug.ai/plugin/hr-comms` |
 | [Cybersecurity](plugins/cybersecurity) | Book a security assessment call | `https://mcp.bizplug.ai/plugin/cybersecurity` |

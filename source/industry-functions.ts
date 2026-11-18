@@ -19,6 +19,7 @@ export type IndustryFunction = {
   perGuest?: boolean; // stay only: price is per guest, not per unit
   note?: string; // extra rule shown to the model
   members?: boolean; // the business may publish its member businesses: find_members and members.csv (plugins.ts, plugin-data.ts)
+  infoFirst?: boolean; // the menu starts with "Ask a question": the plug-in mainly explains the business (chambers)
 };
 
 const NO_ADVICE = "Scheduling and information only: never give medical, mental-health or clinical advice, and never ask for symptoms or records.";
@@ -27,7 +28,7 @@ const NO_FIN = "Information and scheduling only: never give financial, investmen
 // slug | engine | title | tool names | noun | span | perGuest | note
 const r = (
   slug: string, engine: Engine, title: string, tools: [string, string, string], noun: string,
-  extra: Partial<Pick<IndustryFunction, "span" | "perGuest" | "note" | "members">> = {},
+  extra: Partial<Pick<IndustryFunction, "span" | "perGuest" | "note" | "members" | "infoFirst">> = {},
 ): IndustryFunction => ({ slug, engine, title, tools, noun, ...extra });
 
 export const industryFunctions: IndustryFunction[] = [
@@ -115,6 +116,7 @@ export const industryFunctions: IndustryFunction[] = [
   r("utilities", "track", "Outage and service-request status", ["lookup_service_status", "report_issue", "get_issue_status"], "service issue"),
   r("property-management", "track", "Maintenance requests and status", ["lookup_request_status", "submit_maintenance_request", "get_request_status"], "maintenance request"),
   r("nonprofits", "track", "Volunteer and donation requests", ["lookup_request_status", "submit_volunteer_or_donation_request", "get_request_status"], "volunteer or donation request", { note: "Never take card or bank details in chat." }),
+  r("chambers", "track", "Chamber information, membership enquiries and member businesses", ["lookup_membership_reference", "send_chamber_enquiry", "get_enquiry_status"], "membership or event enquiry", { members: true, infoFirst: true, note: "Share only what the chamber or association has published about membership, dues, events and programs. Never promise that membership will be approved, or any introduction, business lead or policy outcome, and never take payment of dues in chat." }),
   r("associations", "track", "Membership applications and renewals", ["lookup_membership_status", "submit_membership_request", "get_request_status"], "membership request"),
   r("political-campaigns", "track", "Volunteer and event sign-ups", ["lookup_signup_status", "submit_volunteer_signup", "get_signup_status"], "volunteer sign-up", { note: "Non-partisan service: share only what the campaign has published; never persuade, and never take donations in chat." }),
   r("airlines", "track", "Flight status and support requests", ["lookup_flight_status", "submit_support_request", "get_request_status"], "flight or support request"),
