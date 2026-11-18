@@ -213,6 +213,11 @@ export const versionDate = (v: PluginVersion) =>
 export const FIRST_VERSION = PLUGIN_VERSIONS[0].version;
 
 const parts = (v: string) => v.split(".").map((n) => Number(n) || 0);
+/**
+ * One number for a business's published plug-in: the plug-in version with the release as its third part, so
+ * release 4 on 0.12.0 reads 0.12.4. Plug-in versions step the second number, which leaves the third for the release.
+ */
+export const releaseVersion = (version: string, release: number) => `${parts(version)[0]}.${parts(version)[1] ?? 0}.${release}`;
 /** Negative when a is older than b. */
 export function compareVersions(a: string, b: string): number {
   const x = parts(a), y = parts(b);
