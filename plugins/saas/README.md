@@ -11,7 +11,7 @@ Version 0.14.0. Book a product demo for saas & software businesses.
 
 - **Open times**: See what can be booked and the open times on a day.
 - **Request the appointment**: Ask for an open time. The business confirms the appointment.
-- **Ask a question**: Answers from the business's own information: features, pricing, integrations and demo requests.
+- **Ask a question**: Answers from the business's own information: features, integrations, plans pages and demo requests.
 - **Request status**: Check a request with its reference.
 - **Contact the business**: Phone, email, website and opening hours.
 
@@ -23,7 +23,7 @@ Version 0.14.0. Book a product demo for saas & software businesses.
 | `find_demo_slots` | List bookable demo options and the open times on a day, from the business's published hours. Creates nothing. |
 | `request_demo` | Send a request for a demo at an open time to the business. Use only once the customer has picked a time. The business confirms the appointment. |
 | `get_demo_status` | Look up the status of a request by its reference. |
-| `get_business_info` | Answer a general question about this saas & software business using only its published profile: features, pricing, integrations and demo requests. Creates nothing. If the profile does not cover the question, say so and use get_contact. |
+| `get_business_info` | Answer a general question about this saas & software business using only its published profile: features, integrations, plans pages and demo requests. Creates nothing. If the profile does not cover the question, say so and use get_contact. |
 | `get_contact` | Return the business's published contact details and opening hours for anything the other tools cannot do. |
 
 ## Changes

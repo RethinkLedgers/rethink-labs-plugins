@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bizplug-saas",
   "version": "0.14.0",
-  "description": "The saas & software plug-in from BizPlug. Main function: book a product demo. It works from the business's own published profile, covering features, pricing, integrations and demo requests, and sends requests to the business to confirm. It never takes payment and only shares what the business has published. Provided by BizPlug: https://bizplug.ai, info@bizplug.ai.",
+  "description": "The saas & software plug-in from BizPlug. Main function: book a product demo. It works from the business's own published profile, covering features, integrations, plans pages and demo requests, and sends requests to the business to confirm. It never takes payment and only shares what the business has published. Provided by BizPlug: https://bizplug.ai, info@bizplug.ai.",
   "author": {
     "name": "Bart Cant - Rethink Labs",
     "email": "info@bizplug.ai",
@@ -16,7 +16,7 @@
       "interface": {
         "displayName": "BizPlug SaaS & Software",
         "shortDescription": "Book a product demo for saas & software businesses.",
-        "longDescription": "The saas & software plug-in from BizPlug. Main function: book a product demo. It works from the business's own published profile, covering features, pricing, integrations and demo requests, and sends requests to the business to confirm. It never takes payment and only shares what the business has published. Provided by BizPlug: https://bizplug.ai, info@bizplug.ai.",
+        "longDescription": "The saas & software plug-in from BizPlug. Main function: book a product demo. It works from the business's own published profile, covering features, integrations, plans pages and demo requests, and sends requests to the business to confirm. It never takes payment and only shares what the business has published. Provided by BizPlug: https://bizplug.ai, info@bizplug.ai.",
         "defaultPrompt": [
           "Book a product demo",
           "Does it integrate with our CRM, and what does it cost?",
