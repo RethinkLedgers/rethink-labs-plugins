@@ -247,3 +247,32 @@ export const getVersion = (v: string | undefined) => PLUGIN_VERSIONS.find((x) =>
 export const featuresOf = (v: string | undefined): PluginFeatures => (getVersion(v) ?? PLUGIN_VERSIONS[PLUGIN_VERSIONS.length - 1]).features;
 /** The versions newer than `v`, oldest first. */
 export const versionsAfter = (v: string) => PLUGIN_VERSIONS.filter((x) => compareVersions(x.version, v) > 0);
+
+/** What a business's plug-in can use, to tell whether a version changes anything for it. */
+export type UpgradeContext = {
+  /** The industry has members (industry-functions.ts `members`). */
+  members: boolean;
+  /** A Stripe or Checkout.com account is connected and payments are not switched off. */
+  checkout: boolean;
+};
+
+/**
+ * Features that only act for some plug-ins. Every other feature changes every plug-in. A version matters to a
+ * plug-in when at least one feature it turns on applies to it; one that does not is not offered as an upgrade.
+ */
+const APPLIES: Partial<Record<keyof PluginFeatures, (c: UpgradeContext) => boolean>> = {
+  members: (c) => c.members,
+  stripeCheckout: (c) => c.checkout,
+  payCard: (c) => c.checkout,
+};
+
+export function versionMatters(v: PluginVersion, c: UpgradeContext): boolean {
+  const before = PLUGIN_VERSIONS[PLUGIN_VERSIONS.indexOf(v) - 1];
+  const added = (Object.keys(v.features) as (keyof PluginFeatures)[]).filter((k) => v.features[k] && !before?.features[k]);
+  // A version that turns on no feature changed something for everyone.
+  if (!added.length) return true;
+  return added.some((k) => APPLIES[k]?.(c) ?? true);
+}
+
+/** The versions after `v` that change something for this plug-in. */
+export const relevantVersionsAfter = (v: string, c: UpgradeContext) => versionsAfter(v).filter((x) => versionMatters(x, c));
