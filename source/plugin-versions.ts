@@ -152,7 +152,7 @@ export const PLUGIN_VERSIONS: PluginVersion[] = [
       "Your buttons show on your menu card, so a customer can message, book, find or follow you without asking first.",
       "A Book button to your booking page shows next to availability and open times, where a customer decides.",
       "The assistant knows which buttons you have and points to the right one at the right moment.",
-      "Your Traction page counts how often each button is pressed, and where each request was delivered.",
+      "Your Traction Dashboard counts how often each button is pressed, and where each request was delivered.",
     ],
     features: { menuCard: true, cardResults: true, cardNavigation: true, whatsappContact: true, businessLinks: true, quickActions: true, paymentAnswers: false, stripeCheckout: false, listingDetails: false, fullAnnotations: false, members: false, payCard: false },
   },
