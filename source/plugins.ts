@@ -150,7 +150,7 @@ function buildMenu(i: Industry, fn: IndustryFunction): MenuOption[] {
       { tool: SOFTWARE_TOOLS.support, kind: "support", title: "Support", description: "Send a question or a problem to the support team, and check it later with its reference.", example: "I need help with my account", only: "software" },
       { ...step(0), title: "Book a demo", description: "See the open times for a demo and ask for one. The team confirms it by email.", only: "software" },
       legacy(step(0)),
-      { ...step(1), hidden: true, only: "software" },
+      { ...step(1), title: "Request a demo", hidden: true, only: "software" },
       legacy(step(1)),
       legacy(question),
       step(2),
