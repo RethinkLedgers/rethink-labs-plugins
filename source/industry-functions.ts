@@ -20,6 +20,7 @@ export type IndustryFunction = {
   note?: string; // extra rule shown to the model
   members?: boolean; // the business may publish its member businesses: find_members and members.csv (plugins.ts, plugin-data.ts)
   infoFirst?: boolean; // the menu starts with "Ask a question": the plug-in mainly explains the business (chambers)
+  software?: boolean; // a software product: from 0.15.0 the menu is Features, Pricing, Help & guides, Support, Book a demo (plugins.ts, software.ts)
 };
 
 const NO_ADVICE = "Scheduling and information only: never give medical, mental-health or clinical advice, and never ask for symptoms or records.";
@@ -28,7 +29,7 @@ const NO_FIN = "Information and scheduling only: never give financial, investmen
 // slug | engine | title | tool names | noun | span | perGuest | note
 const r = (
   slug: string, engine: Engine, title: string, tools: [string, string, string], noun: string,
-  extra: Partial<Pick<IndustryFunction, "span" | "perGuest" | "note" | "members" | "infoFirst">> = {},
+  extra: Partial<Pick<IndustryFunction, "span" | "perGuest" | "note" | "members" | "infoFirst" | "software">> = {},
 ): IndustryFunction => ({ slug, engine, title, tools, noun, ...extra });
 
 export const industryFunctions: IndustryFunction[] = [
@@ -88,7 +89,7 @@ export const industryFunctions: IndustryFunction[] = [
   r("universities", "appt", "Book campus tours and advising", ["find_tour_slots", "request_tour", "get_tour_status"], "tour or advising slot"),
   r("consulting", "appt", "Book a discovery call", ["find_call_slots", "request_discovery_call", "get_call_status"], "discovery call"),
   r("agencies", "appt", "Book a strategy call", ["find_call_slots", "request_strategy_call", "get_call_status"], "strategy call"),
-  r("saas", "appt", "Book a product demo", ["find_demo_slots", "request_demo", "get_demo_status"], "demo"),
+  r("saas", "appt", "Book a product demo", ["find_demo_slots", "request_demo", "get_demo_status"], "demo", { software: true }),
   r("dev-tools", "appt", "Book a technical demo or onboarding", ["find_demo_slots", "request_demo", "get_demo_status"], "demo"),
   r("cybersecurity", "appt", "Book a security assessment call", ["find_assessment_slots", "request_assessment_call", "get_call_status"], "assessment call", { note: "Never ask for credentials, keys or details of live vulnerabilities in chat." }),
   r("recruiting", "appt", "Book an intro call for employers or candidates", ["find_call_slots", "request_intro_call", "get_call_status"], "intro call"),

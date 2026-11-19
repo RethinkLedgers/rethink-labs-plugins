@@ -1,6 +1,6 @@
 # BizPlug Casinos & Gaming
 
-Version 0.14.0. Hotel rooms and show tickets (no wagering) for casinos & gaming businesses.
+Version 0.15.0. Hotel rooms and show tickets (no wagering) for casinos & gaming businesses.
 
 - Main function: Hotel rooms and show tickets (no wagering)
 - MCP server URL: `https://mcp.bizplug.ai/plugin/casinos` (streamable HTTP, no sign-in)
@@ -28,6 +28,7 @@ Version 0.14.0. Hotel rooms and show tickets (no wagering) for casinos & gaming 
 
 ## Changes
 
+- **0.15.0** (18 November 2026): Software & SaaS plug-ins get a menu made for software (Features, Pricing, Help & guides, Support, Book a demo), and every business's plug-in describes only the business to ChatGPT.
 - **0.14.0** (18 November 2026): A business's plug-in shows its full name in ChatGPT, the business's name with what it is, and its own logo as the plug-in's icon.
 - **0.13.0** (18 November 2026): A pay step in the card after a request with checkout: the total, a Pay now button to the business's own checkout page, and an I've paid button that checks the payment.
 - **0.12.0** (17 November 2026): Coworking & Offices: a business can publish its member businesses, so people can find a member by name, kind of business or what they need or offer, and contact it directly.

@@ -1,6 +1,6 @@
 # BizPlug SaaS & Software
 
-Version 0.14.0. Book a product demo for saas & software businesses.
+Version 0.15.0. Book a product demo for saas & software businesses.
 
 - Main function: Book a product demo
 - MCP server URL: `https://mcp.bizplug.ai/plugin/saas` (streamable HTTP, no sign-in)
@@ -9,11 +9,13 @@ Version 0.14.0. Book a product demo for saas & software businesses.
 
 ## What a customer can do
 
-- **Open times**: See what can be booked and the open times on a day.
-- **Request the appointment**: Ask for an open time. The business confirms the appointment.
-- **Ask a question**: Answers from the business's own information: features, integrations, plans pages and demo requests.
+- **Features**: What it does: find a feature, the plan it is on and the guide that explains it.
+- **Pricing**: The plans and what each includes, or the pricing page.
+- **Help & guides**: Search the help articles and guides, and open the one you need.
+- **Support**: Send a question or a problem to the support team, and check it later with its reference.
+- **Book a demo**: See the open times for a demo and ask for one. The team confirms it by email.
 - **Request status**: Check a request with its reference.
-- **Contact the business**: Phone, email, website and opening hours.
+- **Contact**: Email, website, and the support and status pages.
 
 ## Tools
 
@@ -25,9 +27,14 @@ Version 0.14.0. Book a product demo for saas & software businesses.
 | `get_demo_status` | Look up the status of a request by its reference. |
 | `get_business_info` | Answer a general question about this saas & software business using only its published profile: features, integrations, plans pages and demo requests. Creates nothing. If the profile does not cover the question, say so and use get_contact. |
 | `get_contact` | Return the business's published contact details and opening hours for anything the other tools cannot do. |
+| `get_features` | List or search what this software product does, from the features it published: each with what it does, the plan that includes it and the guide that explains it. Creates nothing. |
+| `get_pricing` | Return the product's plans as it published them, or only its pricing page when the product shows no plans here. Creates nothing; never quote a price that is not returned, and never start a subscription or an upgrade. |
+| `search_help` | Search the product's published help articles and guides by words or topic, and return each with its link. Creates nothing. |
+| `request_support` | Send the customer's question or problem to the product's support team, with a reference to check it later. Use only once the customer has given the details and agrees to send it. The team replies by email. |
 
 ## Changes
 
+- **0.15.0** (18 November 2026): Software & SaaS plug-ins get a menu made for software (Features, Pricing, Help & guides, Support, Book a demo), and every business's plug-in describes only the business to ChatGPT.
 - **0.14.0** (18 November 2026): A business's plug-in shows its full name in ChatGPT, the business's name with what it is, and its own logo as the plug-in's icon.
 - **0.13.0** (18 November 2026): A pay step in the card after a request with checkout: the total, a Pay now button to the business's own checkout page, and an I've paid button that checks the payment.
 - **0.12.0** (17 November 2026): Coworking & Offices: a business can publish its member businesses, so people can find a member by name, kind of business or what they need or offer, and contact it directly.

@@ -7,7 +7,7 @@ import { pricing } from "@/lib/pricing";
 import { siteConfig } from "@/lib/seo";
 import { directoryPath, type DirectoryDef } from "@/lib/directory-store";
 
-export const PLUGIN_VERSION = "0.14.0"; // versions and their notes: plugin-versions.ts
+export const PLUGIN_VERSION = "0.15.0"; // versions and their notes: plugin-versions.ts
 export const MCP_HOST = "https://mcp.bizplug.ai";
 /** Where plug-ins published to test from the client portal answer: the same app, on its test host. */
 export const MCP_TEST_HOST = "https://mcp-test.bizplug.ai";
@@ -30,8 +30,13 @@ export type PluginTestCase = { prompt: string; expect: string; shouldTrigger: bo
 
 /** One option of a plug-in's menu: what show_menu returns in ChatGPT and what the plug-in pages list. */
 /** `kind` tells the ChatGPT card (widgets/plugin-widget.ts) which inputs the option asks for. */
-export type MenuKind = "lookup" | "request" | "question" | "status" | "contact" | "members";
-export type MenuOption = { tool: string; kind: MenuKind; title: string; description: string; example: string };
+export type MenuKind = "lookup" | "request" | "question" | "status" | "contact" | "members" | "features" | "pricing" | "guides" | "support";
+/**
+ * `only`: on a software plug-in (industry-functions.ts `software`), the option belongs to the menu from plug-in
+ * 0.15.0 ("software") or to the menu before it ("legacy"); plugin-mcp.ts shows the one a business's version has.
+ * `hidden`: the card needs the option (a demo request is sent from the open times) but draws no button for it.
+ */
+export type MenuOption = { tool: string; kind: MenuKind; title: string; description: string; example: string; only?: "software" | "legacy"; hidden?: boolean };
 
 export type IndustryPlugin = {
   slug: string;
@@ -57,6 +62,10 @@ const lower = (s: string) => s.toLowerCase();
  * option only for a business that published a member list.
  */
 export const MEMBERS_TOOL = "find_members";
+
+/** Software products (`software` in industry-functions.ts), from plug-in version 0.15.0 (software.ts). */
+export const SOFTWARE_TOOLS = { features: "get_features", pricing: "get_pricing", guides: "search_help", support: "request_support" } as const;
+export const isSoftwareTool = (name: string) => (Object.values(SOFTWARE_TOOLS) as string[]).includes(name);
 /** Who publishes the member list, in the tool copy: coworking's wording is unchanged since 0.12.0. */
 const MEMBERS_HOST: Record<string, string> = { coworking: "the coworking business", chambers: "the chamber or association" };
 const membersDirect = (slug: string) =>
@@ -130,6 +139,25 @@ function buildMenu(i: Industry, fn: IndustryFunction): MenuOption[] {
   const KINDS = ["lookup", "request", "status"] as const;
   const step = (idx: 0 | 1 | 2): MenuOption => ({ tool: tools[idx], kind: KINDS[idx], title: TITLES[engine][idx], description: MENU_COPY[engine][idx], example: example(idx) });
   const question: MenuOption = { tool: "get_business_info", kind: "question", title: "Ask a question", description: `Answers from the business's own information: ${i.covers}.`, example: i.ask };
+  // 0.15.0, software products: what it does, what it costs, how to use it, getting help, and a demo. The engine's
+  // look-up and request stay, as Book a demo; the menu before 0.15.0 stays for plug-ins pinned to it.
+  if (fn.software) {
+    const legacy = (o: MenuOption): MenuOption => ({ ...o, only: "legacy" });
+    return [
+      { tool: SOFTWARE_TOOLS.features, kind: "features", title: "Features", description: "What it does: find a feature, the plan it is on and the guide that explains it.", example: "Does it sync with my CRM?", only: "software" },
+      { tool: SOFTWARE_TOOLS.pricing, kind: "pricing", title: "Pricing", description: "The plans and what each includes, or the pricing page.", example: "What does it cost?", only: "software" },
+      { tool: SOFTWARE_TOOLS.guides, kind: "guides", title: "Help & guides", description: "Search the help articles and guides, and open the one you need.", example: "How do I get started?", only: "software" },
+      { tool: SOFTWARE_TOOLS.support, kind: "support", title: "Support", description: "Send a question or a problem to the support team, and check it later with its reference.", example: "I need help with my account", only: "software" },
+      { ...step(0), title: "Book a demo", description: "See the open times for a demo and ask for one. The team confirms it by email.", only: "software" },
+      legacy(step(0)),
+      { ...step(1), hidden: true, only: "software" },
+      legacy(step(1)),
+      legacy(question),
+      step(2),
+      { tool: "get_contact", kind: "contact", title: "Contact", description: "Email, website, and the support and status pages.", example: "How do I contact the team?", only: "software" },
+      legacy({ tool: "get_contact", kind: "contact", title: "Contact the business", description: "Phone, email, website and opening hours.", example: "How do I contact the business?" }),
+    ];
+  }
   // A plug-in that mainly explains the business (chambers) starts with its questions and answers.
   return [
     ...(fn.infoFirst ? [question, step(1), step(0)] : [step(0), step(1), question]),
@@ -181,6 +209,15 @@ export function buildPlugin(i: Industry): IndustryPlugin {
           },
         ]
       : []),
+    // 0.15.0, software products (software.ts). Offered only to plug-ins on 0.15.0 or later (plugin-mcp.ts).
+    ...(fn.software
+      ? [
+          { name: SOFTWARE_TOOLS.features, title: "Features", description: "List or search what this software product does, from the features it published: each with what it does, the plan that includes it and the guide that explains it. Creates nothing.", readOnly: true },
+          { name: SOFTWARE_TOOLS.pricing, title: "Pricing", description: "Return the product's plans as it published them, or only its pricing page when the product shows no plans here. Creates nothing; never quote a price that is not returned, and never start a subscription or an upgrade.", readOnly: true },
+          { name: SOFTWARE_TOOLS.guides, title: "Help & guides", description: "Search the product's published help articles and guides by words or topic, and return each with its link. Creates nothing.", readOnly: true },
+          { name: SOFTWARE_TOOLS.support, title: "Support request", description: "Send the customer's question or problem to the product's support team, with a reference to check it later. Use only once the customer has given the details and agrees to send it. The team replies by email.", readOnly: false },
+        ]
+      : []),
   ];
   return {
     slug: i.slug,
@@ -198,6 +235,12 @@ export function buildPlugin(i: Industry): IndustryPlugin {
       { prompt: fn.title, expect: `Calls ${fn.infoFirst ? "get_business_info" : fn.tools[0]} and answers from the published profile.`, shouldTrigger: true },
       { prompt: i.ask, expect: "Answers from the business profile, or says it is not covered and offers contact details.", shouldTrigger: true },
       { prompt: "Go ahead and send it.", expect: `Calls ${fn.tools[1]} only after the customer has confirmed the details, and reports that the business still has to confirm.`, shouldTrigger: true },
+      ...(fn.software
+        ? [
+            { prompt: "What does it cost?", expect: `Calls ${SOFTWARE_TOOLS.pricing} and shows the published plans, or only the pricing page when the product shows no plans; never invents a price or offers a subscription.`, shouldTrigger: true },
+            { prompt: "How do I connect my CRM?", expect: `Calls ${SOFTWARE_TOOLS.guides} (or ${SOFTWARE_TOOLS.features}) and gives the matching guide with its link, or says none is published.`, shouldTrigger: true },
+          ]
+        : []),
       ...(fn.members
         ? [{ prompt: "Which member businesses here could help with web design?", expect: `Calls ${MEMBERS_TOOL} and lists the matching members with their published contact details, or says the business has not published a member list; says the customer contacts a member directly and offers no introduction.`, shouldTrigger: true }]
         : []),
@@ -208,6 +251,9 @@ export function buildPlugin(i: Industry): IndustryPlugin {
 }
 
 export const plugins: IndustryPlugin[] = industries.map(buildPlugin);
+
+/** The menu a customer sees on the current plug-in version, as the public pages and the portal list it. */
+export const currentMenu = (p: IndustryPlugin) => p.menu.filter((o) => o.only !== "legacy" && !o.hidden);
 
 export function getPlugin(slug: string) {
   return plugins.find((p) => p.slug === slug);

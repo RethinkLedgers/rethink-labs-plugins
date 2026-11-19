@@ -14,6 +14,9 @@
 //   From 0.12.0, on a coworking plug-in whose business published its member businesses, the menu has a Members
 //   option (kind "members"): search and filters on the list, a member on its own screen with its published
 //   website, email and phone, and "Find a collaborator". The customer contacts a member themselves.
+//   From 0.15.0, on a software plug-in: Features (search, the plan and guide of each), Pricing (the plans, or only
+//   the pricing page), Help & guides (search and topics, each article opens on the product's site) and Support (a
+//   support request with a reference). Options marked hidden are kept for the card's flows but get no button.
 // Every value shown comes from a tool's structuredContent, never from its text, which is written for the assistant. Served as
 // text/html+skybridge like the guide card (guide-widget.ts); the URI is content-addressed.
 import { createHash } from "node:crypto";
@@ -28,6 +31,10 @@ const ICONS: Record<string, string> = {
   question: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.4"/><path d="M12 16.5h.01"/>',
   status: '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 14 2 2 4-4"/>',
   contact: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
+  features: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  pricing: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+  guides: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
+  support: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="m5.6 5.6 3.9 3.9M14.5 14.5l3.9 3.9M18.4 5.6l-3.9 3.9M9.5 14.5l-3.9 3.9"/>',
   members: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/>',
   store: '<path d="M3 9 4.5 4h15L21 9"/><path d="M3 9v11h18V9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M9 20v-6h6v6"/>',
   mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
@@ -372,7 +379,7 @@ function links(except) {
   // Next to availability and open times: the business's own booking page, for a customer who wants a confirmed slot.
   const book = except === "lookup" ? actionBar((a) => a.group === "calendars", "Or book directly") : "";
   if (!nav()) return book;
-  const out = state.options.map((o, i) => (o.kind === except || o.kind === "request" || o.kind === "status" ? "" : '<button class="q" data-open="' + i + '">' + esc(o.title) + "</button>")).join("");
+  const out = state.options.map((o, i) => (o.kind === except || o.hidden || o.kind === "request" || o.kind === "status" ? "" : '<button class="q" data-open="' + i + '">' + esc(o.title) + "</button>")).join("");
   return book + (out ? '<div class="more"><span>More</span>' + out + "</div>" : "");
 }
 // Back: every screen left on the way is remembered, except the menu and the screens that only confirm.
@@ -432,10 +439,10 @@ function contactBar() {
     (c.email ? '<button class="btn" data-href="' + esc(c.email) + '">' + icon("mail") + "Email</button>" : "") + "</div>";
 }
 function menuView() {
-  const opts = state.options;
+  const opts = state.options.filter((o) => !o.hidden);
   const pick = picker();
   return pick + '<div class="grid">' + opts.map((o, i) =>
-    '<button class="tile' + (i === 0 ? " hero" : "") + (i > 0 && opts.length % 2 === 0 && i === opts.length - 1 ? " wide" : "") + '" data-open="' + i + '"><span class="ic">' + icon(o.kind) + "</span><span>" +
+    '<button class="tile' + (i === 0 ? " hero" : "") + (i > 0 && opts.length % 2 === 0 && i === opts.length - 1 ? " wide" : "") + '" data-open="' + state.options.indexOf(o) + '"><span class="ic">' + icon(o.kind) + "</span><span>" +
     '<div class="tt">' + esc(o.title) + (i === 0 ? '<span class="badge">Start here</span>' : "") + '</div><div class="dd">' + esc(o.description) + "</div></span></button>").join("") + "</div>" +
     (p().bound || pick ? "" : '<div class="note">This plug-in serves every business in its industry: the assistant will ask which business you mean.</div>') +
     actionBar((a) => a.where === "contact", p().businessName || p().title ? "Reach " + (p().businessName || p().title) : "");
@@ -643,6 +650,46 @@ function collabView() {
     '<div class="note" style="margin-top:0">Your words are matched against each member&rsquo;s entry, above all what it offers and what it is looking for. You contact a member directly.</div></div>';
 }
 
+// ---- Software products (version 0.15.0) ----
+const findIn = (kind, over) => { const o = opt(kind); const a = clean(Object.assign({ query: v(kind === "features" ? "fq" : "gq") }, over || {})); run(o && o.tool, a, (o && o.example) || ""); };
+function featuresView() {
+  const d = state.data.features || { items: [] };
+  const o = opt("features");
+  const head = top(o ? o.title : "Features") + '<div class="find"><input type="search" data-f="fq" data-enter="ffind" value="' + esc(state.f.fq || "") + '" placeholder="A feature, or what you want to do"><button class="btn" data-act="ffind">Search</button></div><div style="height:8px"></div>';
+  const items = d.items || [];
+  if (!items.length) return head + '<div class="empty">' + (d.query ? 'No feature matches "' + esc(d.query) + '". Try other words.' : "No features are published yet.") + "</div>" + errLine() + links("features");
+  return head + '<div class="list">' + items.map((x) => '<div class="it"><div class="nm"><b>' + esc(x.name) + "</b>" + (x.plan ? '<span class="tag">' + esc(x.plan) + "</span>" : "") + "</div>" +
+    (x.description ? '<div class="bl">' + esc(x.description) + "</div>" : "") + (x.guide ? '<div class="acts"><button class="btn" data-href="' + esc(x.guide) + '">Guide</button></div>' : "") + "</div>").join("") + "</div>" +
+    (d.more ? '<div class="note">' + d.more + " more: search to narrow the list.</div>" : "") + errLine() + links("features");
+}
+function pricingView() {
+  const d = state.data.pricing || { plans: [] };
+  const o = opt("pricing");
+  const plans = d.plans || [];
+  const page = d.url ? '<div class="actions" style="margin-top:12px"><button class="btn go" data-href="' + esc(d.url) + '">' + (plans.length ? "Full pricing" : "See plans and prices") + "</button></div>" : "";
+  if (!plans.length) return top(o ? o.title : "Pricing") + '<div class="sum"><div><b>' + (d.url ? "Plans and prices" : "Pricing") + "</b><span>" + (d.url ? "Every plan and its price are on " + esc(d.business || "the") + "’s own pricing page." : "No pricing is published here. Ask the team in the chat or with Contact.") + "</span></div></div>" + page + links("pricing");
+  return top(o ? o.title : "Pricing") + '<div class="list">' + plans.map((x) => '<div class="it"><div class="nm"><b>' + esc(x.name) + '</b><span class="pr">' + esc([x.price, x.billing].filter(Boolean).join(" ")) + "</span></div>" + (x.includes ? '<div class="bl">' + esc(x.includes) + "</div>" : "") + "</div>").join("") + "</div>" + page +
+    '<div class="note">As published by ' + esc(d.business || "the business") + ". Nothing is bought or started here.</div>" + links("pricing");
+}
+function guidesView() {
+  const d = state.data.guides || { items: [] };
+  const o = opt("guides");
+  const topics = d.topics || [];
+  const head = top(o ? o.title : "Help & guides") + '<div class="find"><input type="search" data-f="gq" data-enter="gfind" value="' + esc(state.f.gq || "") + '" placeholder="What do you need help with?"><button class="btn" data-act="gfind">Search</button></div>' +
+    (topics.length > 1 ? '<div class="qs" style="margin:8px 0 12px">' + chip("All", "data-gtopic", "", !d.topic) + topics.map((t) => chip(esc(t.name) + " <small>" + t.count + "</small>", "data-gtopic", t.name, t.name === d.topic)).join("") + "</div>" : '<div style="height:8px"></div>');
+  const items = d.items || [];
+  const docs = d.docs ? '<div class="actions" style="margin-top:12px"><button class="btn" data-href="' + esc(d.docs) + '">All documentation</button></div>' : "";
+  if (!items.length) return head + '<div class="empty">' + (d.query ? 'No article matches "' + esc(d.query) + '".' : "No help articles are published here yet.") + "</div>" + docs + errLine() + links("guides");
+  return head + '<div class="list">' + items.map((g) => '<div class="it"><button class="rowb" data-href="' + esc(g.url) + '"><div class="nm"><b>' + esc(g.title) + "</b>" + (g.topic ? '<span class="qlabel">' + esc(g.topic) + "</span>" : "") + "</div>" + (g.summary ? '<div class="bl clamp">' + esc(g.summary) + "</div>" : "") + "</button></div>").join("") + "</div>" +
+    (d.more ? '<div class="note">' + d.more + " more: search or choose a topic.</div>" : "") + docs + errLine() + links("guides");
+}
+function supportView() {
+  const o = opt("support");
+  return '<div class="form">' + top(o ? o.title : "Support") + '<div class="hint">' + esc((o && o.description) || "") + "</div>" +
+    field("stopic", "Subject", { placeholder: "e.g. I can’t sign in" }) + field("smessage", "What happened?", { type: "textarea", placeholder: "What you were doing, what you expected, and what you saw" }) + whoFields() + errLine() +
+    '<div class="actions">' + primary("Send to support", "support") + '</div><div class="note" style="margin-top:0">The support team replies by email. You get a reference to check it later.</div></div>' + links("support");
+}
+
 function requestView() {
   const k = state.pick || {};
   const request = opt("request");
@@ -701,6 +748,10 @@ function openOption(i) {
   if (!o) return;
   state.error = ""; state.hint = "";
   if (o.kind === "contact") { run(o.tool, {}, o.example); return; }
+  // 0.15.0: software products. Features, Pricing and Help open with their results; Support opens its form.
+  if (o.kind === "features" || o.kind === "guides") { state.f[o.kind === "features" ? "fq" : "gq"] = ""; run(o.tool, {}, o.example); return; }
+  if (o.kind === "pricing") { run(o.tool, {}, o.example); return; }
+  if (o.kind === "support") { if (!inCard()) { state.open = i; state.view = "form"; render(); return; } state.view = "support"; render(); return; }
   // 0.12.0: the member list opens unfiltered, by industry.
   if (o.kind === "members") { state.f.mq = ""; run(o.tool, {}, o.example); return; }
   // 0.4.0: the business's published information and its questions and answers show in the card first.
@@ -726,7 +777,7 @@ function render() {
   applyTheme(theme);
   if (nav()) track();
   const app = document.getElementById("app");
-  const views = { item: itemView, option: optionView, info: infoView, menu: menuView, form: formView, asked: askedView, catalog: catalogView, availability: availabilityView, slots: slotsView, estimate: estimateView, status: statusView, contact: contactView, request: requestView, sent: sentView, whatsapp: whatsappView, members: membersView, member: memberView, collab: collabView };
+  const views = { item: itemView, option: optionView, info: infoView, menu: menuView, form: formView, asked: askedView, catalog: catalogView, availability: availabilityView, slots: slotsView, estimate: estimateView, status: statusView, contact: contactView, request: requestView, sent: sentView, whatsapp: whatsappView, members: membersView, member: memberView, collab: collabView, features: featuresView, pricing: pricingView, guides: guidesView, support: supportView };
   const body = state.view === "loading" || !state.plugin ? '<div class="empty">Loading…</div>' : (views[state.view] || menuView)();
   app.innerHTML = header() + body + (state.view === "menu" ? (nav() && state.busy ? '<div class="note">Working…</div>' : "") + contactBar() : "");
   const on = (sel, fn) => app.querySelectorAll(sel).forEach((el) => el.addEventListener("click", () => fn(el)));
@@ -777,6 +828,15 @@ function render() {
   on("[data-biz]", (b) => chooseBiz(b.dataset.biz));
   on('[data-act="biz"]', () => chooseBiz(v("biz")));
   on('[data-act="unbiz"]', () => { state.business = ""; state.bizName = ""; state.data = {}; state.cart = {}; state.items = {}; state.mem = {}; state.options = state.options.filter((o) => o.kind !== "members"); state.hist = []; state.error = ""; save(); render(); });
+  // ---- Software products (version 0.15.0) ----
+  on('[data-act="ffind"]', () => findIn("features"));
+  on('[data-act="gfind"]', () => findIn("guides", { topic: (state.data.guides || {}).topic || "" }));
+  on("[data-gtopic]", (b) => { state.f.gq = ""; findIn("guides", { query: "", topic: b.dataset.gtopic }); });
+  on('[data-act="support"]', () => guard(() => {
+    const o = opt("support");
+    need(v("stopic"), "Add a subject."); need(v("smessage"), "Say what happened.");
+    run(o && o.tool, Object.assign(who(), { topic: v("stopic"), message: v("smessage") }), "I need support: " + v("stopic"));
+  }));
   // ---- Members (version 0.12.0) ----
   on('[data-act="mfind"]', () => findMembers());
   on("[data-mind]", (b) => findMembers({ industry: b.dataset.mind }));
